@@ -20,7 +20,12 @@ app.use(cors());
 //mongoose.connect('mongodb://localhost/FashionStore');
 //mongoose.Promise = global.Promise;
 
-mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false});
+//mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false});
+
+mongoose.connect('',() => {
+console.log('connects to the db');
+
+});
 
 app.use(express.json());  //  useNewUrlParser: true, useFindAndModify: false
 app.use(express.urlencoded({extended:true}));

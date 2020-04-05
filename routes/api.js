@@ -146,6 +146,7 @@ router.get("/items/:id", async (req, res ,next) => {
 
     var a = 0,b=0,c=0,d=0,e=0;
 
+   
 
     for (var value of item.reviews) {
      if(value.type === 1)
@@ -180,7 +181,7 @@ router.get("/items/:id", async (req, res ,next) => {
     console.log(sum);
    
 
-    res.send(JSON.stringify({message:"item details" , avg : avg , item : item , noOfRatings : {1 : a , 2 : b , 3 : c , 4 : d , 5 : e } } ));
+    res.send(JSON.stringify({message:"item details" , reviews: item.reviews, avg : avg , item : item , noOfRatings : {1 : a , 2 : b , 3 : c , 4 : d , 5 : e } } ));
   }
 catch(e)
 {
