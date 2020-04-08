@@ -98,7 +98,7 @@ router.delete('/users/:id',function(req,res,next){
     //res.send({type : 'DELETE'});
 });
 
-router.post("/items", function(req, res) {
+router.post("/items", function(req, res) {   // add an item
 
     console.log(req.body);
     Items.create(req.body)
@@ -113,75 +113,108 @@ router.post("/items", function(req, res) {
   });
 
 
-router.post("/items/:id", function(req, res) {
-    // Create a new note and pass the req.body to the entry
-    console.log(req.body);
-    console.log(req.params);
-
-   
-    Items.findOneAndUpdate({ _id: req.params.id }, {$push: {reviews: req.body}}, { new: true })
+router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating with comment to given product
     
-      .then(function(dbProduct) {
-        // If we were able to successfully update a Product, send it back to the client
-        res.json(dbProduct);
-      })
-      .catch(function(err) {
-        // If an error occurred, send it to the client
-        res.json(err);
-      });
-  });
+
+    try{
+
+      console.log(req.body);
+      console.log(req.params.id);
+
+      const item = await Items.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: req.body}}, { new: true });
+
+      console.log(item);
+
+      
+      res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
+
+
+    }catch(e)
+    {
+      console.log(e);
+    }
+
+ });
+
+//  router.post("/addComment/:id", async (req, res) =>{   // add a comment to given product
+ 
+
+//   try{
+
+//     console.log(req.body);
+//     console.log(req.params);
+
+//     const item = await Items.findOneAndUpdate({ _id: req.params.id }, {$push: {comments: req.body}}, { new: true });
+
+//     console.log(item);
+
+    
+//     res.send(JSON.stringify({message:"comment added successfully" , item : item } ));
+
+
+//   }catch(e)
+//   {
+//     console.log(e);
+//   }
+
+// });
 
 
 
 
-router.get("/items/:id", async (req, res ,next) => {  
+router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ratings for given product id
 
   try{
 
     const item = await Items.findOne({_id : req.params.id});
 
-    console.log(item.reviews);
+    console.log(item.ratings);
 
     var sum = 0;
+
+    var noOfRatings = 0;
 
     var a = 0,b=0,c=0,d=0,e=0;
 
    
 
-    for (var value of item.reviews) {
-     if(value.type === 1)
+    for (var value of item.ratings) {
+     if(value.rate === 1)
      {
        a++;
      }
-     if(value.type === 2)
+     if(value.rate === 2)
      {
        b++;
      }
-     if(value.type === 3)
+     if(value.rate === 3)
      {
        c++;
      }
-     if(value.type === 4)
+     if(value.rate === 4)
      {
        d++;
      }
-     if(value.type === 5)
+     if(value.rate === 5)
      {
        e++;
      }
 
+     noOfRatings++;
      
-      sum = sum + value.type;
+      sum = sum + value.rate;
     }
+
+    console.log('no of ratings',noOfRatings);
 
     console.log(a,b,c,d,e);
 
-    console.log('avg ',sum /item.reviews.length);
-    const avg = sum /item.reviews.length;
+    console.log('avg ',sum /item.ratings.length);
+    const avg = sum /item.ratings.length;
     console.log(sum);
    
 
-    res.send(JSON.stringify({message:"item details" , reviews: item.reviews, avg : avg , item : item , noOfRatings : {1 : a , 2 : b , 3 : c , 4 : d , 5 : e } } ));
+    res.send(JSON.stringify({message:"item details" ,countRatings : noOfRatings , ratings: item.ratings, avg : avg , item : item , noOfRatings : {1 : a , 2 : b , 3 : c , 4 : d , 5 : e } } ));
   }
 catch(e)
 {
@@ -191,6 +224,30 @@ next(e)
 
 
 });
+
+
+
+// router.get("/getComments/:id", async (req, res ,next) => {  // get comments for given product id
+
+//   try{
+
+//     const item = await Items.findOne({_id : req.params.id});
+
+//     console.log(item.comments);
+
+   
+
+//     res.send(JSON.stringify({message:"comment details" , comments: item.comments} ));
+//   }
+// catch(e)
+// {
+// next(e)
+// }
+
+
+
+// });
+
 
 
 router.get('/items', async (req, res, next) => {

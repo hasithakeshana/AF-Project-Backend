@@ -17,11 +17,14 @@ const ItemSchema = new Schema({
   //   type: Schema.Types.ObjectId,
   //   ref: 'Review'
   // }]
-  reviews: [{
-    name: {type: String},
-    type: {type: Number},
+  ratings: [{
+    userName: {type: String},
+    rate : {type: Number},
+    comment : {type : String}
    
-     }]  
+     }],
+
+  
 });
 
 // Create model from the schema
