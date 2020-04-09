@@ -170,15 +170,21 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
 
     console.log(item.ratings);
 
-    var sum = 0;
+    let sum = 0;
 
-    var noOfRatings = 0;
+    let noOfRatings = 0;
 
-    var a = 0,b=0,c=0,d=0,e=0;
+    let a = 0,b=0,c=0,d=0,e=0;
+
+    for(let ratings of item.ratings)
+    {
+      console.log(ratings.userName);
+
+    }
 
    
 
-    for (var value of item.ratings) {
+    for (let value of item.ratings) {
      if(value.rate === 1)
      {
        a++;
@@ -210,11 +216,12 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
     console.log(a,b,c,d,e);
 
     console.log('avg ',sum /item.ratings.length);
-    const avg = sum /item.ratings.length;
-    console.log(sum);
+    const avgs = sum /item.ratings.length;
+    console.log('sum',sum);
+    const avg = avgs.toFixed(2);
    
 
-    res.send(JSON.stringify({message:"item details" ,countRatings : noOfRatings , ratings: item.ratings, avg : avg , item : item , noOfRatings : {1 : a , 2 : b , 3 : c , 4 : d , 5 : e } } ));
+    res.send(JSON.stringify({message:"item details" ,countRatings : {noOfRatings} , ratings: item.ratings, avg : {avg} , item : item , noOfRatings : {one: a , two : b , three : c , four : d , five : e } } ));
   }
 catch(e)
 {
@@ -224,7 +231,6 @@ next(e)
 
 
 });
-
 
 
 // router.get("/getComments/:id", async (req, res ,next) => {  // get comments for given product id
