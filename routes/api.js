@@ -256,20 +256,69 @@ next(e)
 
 
 
-router.get('/items', async (req, res, next) => {
+router.get('/items/:id', async (req, res, next) => {
       try {
-        const items = await Items.find();
-        console.log(items);
+
+        const item = await Items.findOne({_id : req.params.id});
 
       
+        res.send(JSON.stringify({message:"item details" , item : item } ));
 
-
-        res.json(items);
+        
       } catch (e) {
         
         next(e) 
       }
     });
+
+
+router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for wishlist
+    
+  console.log(req.params.id);
+  console.log('body',req.body); // get the username or userid
+      try{
+  
+       
+
+        const item = await Items.findOne({_id : req.params.id}); // find the item
+  
+        console.log(item);
+
+        const itemAdd = {itemName : item.name,price : item.price,quantity:item.quantity}
+
+        console.log('itemAdd',itemAdd);
+
+        
+       const response = await User.findOneAndUpdate({ _id: req.body.userId }, {$push: {wishlist: itemAdd}}, { new: true });
+        // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
+      
+        console.log('res',response);
+
+        res.send(JSON.stringify({message:"add item successfully to wishlist" , wishlist : response.wishlist } ));
+
+      }catch(e)
+      {
+        console.log(e);
+      }
+  
+   });
+
+router.get('/getWishList/:id', async (req, res, next) => {
+    try {
+
+      const response = await User.findOne({_id : req.params.id});
+
+      console.log(response.wishlist);
+
+     
+     res.send(JSON.stringify({message:"wishlist details" , wishlist : response.wishlist } ));
+      
+    } catch (e) {
+      
+      next(e) 
+    }
+  });
+
 
 
 module.exports = router;

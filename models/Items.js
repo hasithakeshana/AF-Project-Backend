@@ -9,8 +9,18 @@ const ItemSchema = new Schema({
     type: String,
     
   },
+
   quantity: {
     type: Number,
+   
+  },
+
+  price: {
+    type: Number,
+   
+  },
+  description: {
+    type: String,
    
   },
   // reviews: [{
@@ -20,8 +30,8 @@ const ItemSchema = new Schema({
   ratings: [{
     userName: {type: String},
     rate : {type: Number},
-    comment : {type : String}
-   
+    comment : {type : String},
+    date : {type: Date}
      }],
 
   

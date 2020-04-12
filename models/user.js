@@ -10,6 +10,13 @@ const UserSchema = new Schema({
     email : {  type : String   },
     password : {  type : String   },
 
+    wishlist: [{
+        itemName: {type: String},
+        price : {type: Number},
+        quantity : {type : Number},
+        date : {type: Date}
+         }],
+
 });
 
 const User = mongoose.model('user',UserSchema);
