@@ -136,31 +136,6 @@ router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating 
 
  });
 
-//  router.post("/addComment/:id", async (req, res) =>{   // add a comment to given product
- 
-
-//   try{
-
-//     console.log(req.body);
-//     console.log(req.params);
-
-//     const item = await Items.findOneAndUpdate({ _id: req.params.id }, {$push: {comments: req.body}}, { new: true });
-
-//     console.log(item);
-
-    
-//     res.send(JSON.stringify({message:"comment added successfully" , item : item } ));
-
-
-//   }catch(e)
-//   {
-//     console.log(e);
-//   }
-
-// });
-
-
-
 
 router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ratings for given product id
 
@@ -233,29 +208,6 @@ next(e)
 });
 
 
-// router.get("/getComments/:id", async (req, res ,next) => {  // get comments for given product id
-
-//   try{
-
-//     const item = await Items.findOne({_id : req.params.id});
-
-//     console.log(item.comments);
-
-   
-
-//     res.send(JSON.stringify({message:"comment details" , comments: item.comments} ));
-//   }
-// catch(e)
-// {
-// next(e)
-// }
-
-
-
-// });
-
-
-
 router.get('/items/:id', async (req, res, next) => {
       try {
 
@@ -303,7 +255,7 @@ router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for 
   
    });
 
-router.get('/getWishList/:id', async (req, res, next) => {
+router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
     try {
 
       const response = await User.findOne({_id : req.params.id});
@@ -312,6 +264,28 @@ router.get('/getWishList/:id', async (req, res, next) => {
 
      
      res.send(JSON.stringify({message:"wishlist details" , wishlist : response.wishlist } ));
+      
+    } catch (e) {
+      
+      next(e) 
+    }
+  });
+
+router.post('/deleteWishListProduct', async (req, res, next) => { // delete item from wishlist
+    try {
+
+      console.log('body',req.body);
+
+      const response = await User.findOne({_id : req.body.userId });
+
+      console.log(response.wishlist);
+
+     
+      const responses = await User.updateOne({_id : req.body.userId },{'$pull':{ 'wishlist':{'_id': req.body.wishListOredrId }}},{multi:true});
+     console.log('res',responses);
+
+     
+     res.send(JSON.stringify({message:"deleted successfully" , wishlist :responses} ));
       
     } catch (e) {
       
