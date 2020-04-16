@@ -3,11 +3,20 @@ const mongoose = require("mongoose");
 // Get the Schema constructor
 const Schema = mongoose.Schema;
 
-// Using Schema constructor, create a ProductSchema
+// Using Schema constructor, create a ItemSchema
 const ItemSchema = new Schema({
-  name: {
+  title: {
     type: String,
     
+  },
+  description: {
+    type: String,
+  },
+  category: {
+    type: String,
+  },
+  price: {
+    type: Number,
   },
   quantity: {
     type: Number,
@@ -28,7 +37,7 @@ const ItemSchema = new Schema({
 });
 
 // Create model from the schema
-var Item = mongoose.model("Items", ItemSchema);
+var Item = mongoose.model("items", ItemSchema);
 
 // Export model
 module.exports = Item;

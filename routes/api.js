@@ -102,9 +102,9 @@ router.post("/items", function(req, res) {   // add an item
 
     console.log(req.body);
     Items.create(req.body)
-      .then(function(dbProduct) {
+      .then(function(items) {
        
-        res.json(dbProduct);
+        res.json(items);
       })
       .catch(function(err) {
         // If an error occurred, send it to the client
