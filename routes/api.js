@@ -255,6 +255,46 @@ router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for 
   
    });
 
+
+router.post("/addItemWishListFromCart/:id", async (req, res) =>{   // add a items for wishlist
+    
+    console.log(req.params.id);
+    console.log('body',req.body); // get the username or userid
+        try{
+    
+         
+  
+          // const USER = await User.findOne({_id : req.params.id}); // find the item
+    
+          // console.log('USER',USER);
+
+
+
+    // for(let ratings of item.ratings)
+    // {
+    //   console.log(ratings.userName);
+
+    // }
+  
+          const itemAdd = req.body;
+  
+         console.log('itemAdd',itemAdd);
+  
+          
+         const response = await User.findOneAndUpdate({ _id: req.params.id }, {$push: {cart: itemAdd}}, { new: true });
+        // //   // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
+        
+        console.log('res',response);
+  
+         res.send(JSON.stringify({message:"add item successfully to cart" , wishlist : response.cart } ));
+  
+        }catch(e)
+        {
+          console.log(e);
+        }
+    
+     });
+
 router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
     try {
 

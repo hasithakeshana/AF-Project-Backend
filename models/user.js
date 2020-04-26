@@ -15,7 +15,15 @@ const UserSchema = new Schema({
         price : {type: Number},
         quantity : {type : Number},
         date : {type: Date}
-         }],
+        }],
+
+    cart: [{
+            id : {type: String},
+            itemName: {type: String},
+            price : {type: Number},
+            quantity : {type : Number},
+           
+        }],
 
 });
 

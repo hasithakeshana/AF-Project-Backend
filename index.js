@@ -36,9 +36,9 @@ app.use(function(err,req,res,next){  // handle errors
 
     console.log(err);
 
-res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
- res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
+//res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+ //res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+//res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
  
   next();
 
@@ -48,7 +48,7 @@ res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
 });
 
 
-app.listen(process.env.port || 4000,function(){  // process.env.port useful when host this app
+app.listen(process.env.port || 4001,function(){  // process.env.port useful when host this app
 
     console.log('now listening for requests');
 
