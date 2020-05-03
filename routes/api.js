@@ -265,5 +265,7 @@ router.get('/items', async (req, res, next) => {
       }
     });
 
+   // router.post('/addManager',)
+
 
 module.exports = router;
