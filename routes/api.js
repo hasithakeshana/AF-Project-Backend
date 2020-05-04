@@ -7,6 +7,7 @@ const Product = require('../models/Product');
 const Review = require('../models/Review');
 
 const Items = require('../models/Items');
+const Manager = require('../models/manager');
 
 router.get('/users',function(req,res){
 
@@ -265,7 +266,35 @@ router.get('/items', async (req, res, next) => {
       }
     });
 
-   // router.post('/addManager',)
+   
+router.post("/addManager", function(req, res) {   // add new manager
+
+  console.log(req.body);
+  Manager.create(req.body)
+    .then(function(dbProduct) {
+     
+      res.json(dbProduct);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+router.get('/addManager', async (req, res, next) => {
+  try {
+    const manager = await Manager.find();
+    console.log(manager);
+
+  
+
+
+    res.json(manager);
+  } catch (e) {
+    
+    next(e) 
+  }
+});
 
 
 module.exports = router;
