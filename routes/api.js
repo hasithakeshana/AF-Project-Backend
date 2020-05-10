@@ -118,8 +118,8 @@ router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating 
 
     try{
 
-      console.log(req.body);
-      console.log(req.params.id);
+      console.log('apiiiiiiiiiiiiiiiiiiiiii  body',req.body);
+      console.log('apiiiiii id',req.params.id);
 
       const item = await Items.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: req.body}}, { new: true });
 
@@ -240,13 +240,42 @@ router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for 
 
         console.log('itemAdd',itemAdd);
 
-        
-       const response = await User.findOneAndUpdate({ _id: req.body.userId }, {$push: {wishlist: itemAdd}}, { new: true });
-        // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
-      
-        console.log('res',response);
+        const user = await User.findOne({_id : req.body.userId});
 
-        res.send(JSON.stringify({message:"add item successfully to wishlist" , wishlist : response.wishlist } ));
+        console.log('user',user.wishlist);
+
+        const list = await user.wishlist;
+
+        var exists = false;
+
+        for (let x of list) {
+          console.log('item 11111',x.itemName);
+          if(x.itemName === item.name)
+          {
+              console.log('alreadyy existssssssssssssssss');
+             
+              exists = true;
+          }
+
+        }
+
+        if(exists)
+        {
+          res.send(JSON.stringify({message:"alreadyy existssssssssssssssss" } ));
+        }
+        else{
+
+          const response = await User.findOneAndUpdate({ _id: req.body.userId }, {$push: {wishlist: itemAdd}}, { new: true });
+          // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
+        
+          console.log('res',response);
+  
+          res.send(JSON.stringify({message:"add item successfully to wishlist" , wishlist : response.wishlist } ));
+
+        }
+
+        
+      
 
       }catch(e)
       {
