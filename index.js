@@ -29,7 +29,7 @@ mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology:
 
 app.use(express.json());  //  useNewUrlParser: true, useFindAndModify: false
 app.use(express.urlencoded({extended:true}));
-
+app.use('/uploads', express.static('uploads'));
 app.use('/api',routes);
 
 app.use(function(err,req,res,next){  // handle errors

@@ -5,6 +5,9 @@ const Schema = mongoose.Schema;
 
 // Using Schema constructor, create a ItemSchema
 const ItemSchema = new Schema({
+  id: {
+    type: String,
+  },
   title: {
     type: String,
     
@@ -21,6 +24,10 @@ const ItemSchema = new Schema({
   quantity: {
     type: Number,
    
+  },
+  productImage: {
+    type: String,
+    
   },
   // reviews: [{
   //   type: Schema.Types.ObjectId,

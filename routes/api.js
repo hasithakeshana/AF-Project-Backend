@@ -8,13 +8,52 @@ const Review = require('../models/Review');
 
 const Items = require('../models/Items');
 
+const multer = require('multer');
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb) {
+    cb(null, './uploads');
+  },
+  filename: function(req, file, cb) {
+    cb(null, file.originalname);
+  }
+});
+
+const fileFilter = (req, file, cb) => {
+  //accept image
+  if(file.mimetype === 'image/jpeg' || 'image/png' || 'image/jpg') {
+    cb(null, true);
+  }
+  //reject image
+  else {
+    cb(new Error('File type is not supported'), false);
+  }
+}
+
+const upload = multer({
+  storage: storage,
+  limits: {
+    fileSize: 1024 * 1024 * 10
+  },
+  fileFilter: fileFilter
+});
+
 router.get('/users',function(req,res){
-
-  
-
     res.send({type : 'GET'});
 });
 
+router.post('/edituser',function(req,res){
+  User.findOne({ email: req.body.email}, function(err, user){
+    console.log('user',user);
+
+        if(user === null){
+            res.send(JSON.stringify({message:"User doesn't Exists" , code : 'no'} ));
+        }
+        else{
+            res.send(JSON.stringify({message:"User found successfully" , code : 'edituser', user : user} ));
+        }
+  })
+});
 
 router.post('/signup',function(req,res,next){
 
@@ -72,11 +111,11 @@ router.post('/login',function(req,res,next){
   });
 
 
-router.put('/users/:id',function(req,res){
+router.put('/users/:email',function(req,res){
 
-    User.findByIdAndUpdate({_id : req.params.id},req.body).then(function(){
+    User.findByIdAndUpdate({email : req.params.email},req.body).then(function(){
 
-     User.findOne({_id : req.params.id}).then(function(user){
+     User.findOne({email : req.params.email}).then(function(user){
 
             res.send(user);
      });
@@ -98,10 +137,21 @@ router.delete('/users/:id',function(req,res,next){
     //res.send({type : 'DELETE'});
 });
 
-router.post("/items", function(req, res) {   // add an item
+router.post("/items", upload.single('productImage') , (req, res) => {   // add an item
 
-    console.log(req.body);
-    Items.create(req.body)
+    //image upload
+    console.log("file",req.file);
+
+    const product = {
+      title : req.body.title,
+      description: req.body.description,
+      category: req.body.category,
+      price: req.body.price,
+      quantity: req.body.quantity,
+      productImage: req.file.path
+    }
+    console.log(product);
+    Items.create(product)
       .then(function(items) {
        
         res.json(items);
