@@ -34,6 +34,7 @@ const ItemSchema = new Schema({
     date : {type: Date}
      }],
 
+     productImage : {type:String},
   
 });
 

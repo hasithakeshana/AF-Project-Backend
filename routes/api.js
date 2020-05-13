@@ -5,6 +5,24 @@ const router = express.Router();
 const User = require('../models/user');
 const Product = require('../models/Product');
 const Review = require('../models/Review');
+const mongoose = require("mongoose");
+const multer = require('multer');
+
+
+const storage = multer.diskStorage({
+  destination: function(req, file, cb){
+      cb(null,'./uploads/');
+  },
+  // filename: function(req,file,cb){
+  //     cb(null, new Date().toISOString().replace(/:/g, '-') +'-'+ file.originalname);
+  // }
+  filename: function(req,file,cb){
+    cb(null, Date.now() + file.originalname);
+}
+});
+
+
+const upload = multer({storage:storage});
 
 const Items = require('../models/Items');
 
@@ -98,21 +116,55 @@ router.delete('/users/:id',function(req,res,next){
     //res.send({type : 'DELETE'});
 });
 
-router.post("/items", function(req, res) {   // add an item
+router.post("/items",upload.single('productImage') ,function(req, res) {   // add an item
 
-    console.log(req.body);
-    Items.create(req.body)
-      .then(function(dbProduct) {
+    console.log(req.file);
+
+    const item = new Items({
+
+      _id : new mongoose.Types.ObjectId(),
+      name : req.body.name,
+      quantity: req.body.quantity,
+      price : req.body.price,
+      description : req.body.description,
+      productImage : req.file.filename
+
+    });
+
+    item.save().then(function(dbProduct) {
        
-        res.json(dbProduct);
-      })
-      .catch(function(err) {
-        // If an error occurred, send it to the client
-        res.json(err);
-      });
+          res.json(dbProduct);
+        })
+        .catch(function(err) {
+          // If an error occurred, send it to the client
+          res.json(err);
+        });
+
+    // Items.create(req.body)
+    //   .then(function(dbProduct) {
+       
+    //     res.json(dbProduct);
+    //   })
+    //   .catch(function(err) {
+    //     // If an error occurred, send it to the client
+    //     res.json(err);
+    //   });
   });
 
+  router.get('/allitems', async (req, res, next) => {
+    try {
 
+      const item = await Items.find();
+
+    
+      res.send(JSON.stringify({message:"item details" , item : item } ));
+
+      
+    } catch (e) {
+      
+      next(e) 
+    }
+  });
 router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating with comment to given product
     
 

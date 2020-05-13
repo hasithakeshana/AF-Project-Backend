@@ -27,10 +27,16 @@ mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", {
 // console.log('connects to the db');
 
 // });
+app.use('/uploads',express.static('uploads'));
+//app.use('/uploads', express.static(process.cwd() + '/uploads'))
 
+// var publicDir = require('path').join(__dirname,'/uploads');
+// app.use(express.static(publicDir));
 app.use(express.json()); //  useNewUrlParser: true, useFindAndModify: false
 app.use(express.urlencoded({ extended: true }));
 
+// app.use('/uploads', require('./routes/uploads'));
+// app.use('/uploads', express.static(path.join(__dirname, '/uploads')));
 app.use("/api", routes);
 
 app.use(function (err, req, res, next) {
