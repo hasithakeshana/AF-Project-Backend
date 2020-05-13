@@ -296,5 +296,33 @@ router.get('/addManager', async (req, res, next) => {
   }
 });
 
+router.post("/addCatergory", function(req, res) {   // add new manager
+
+  console.log(req.body);
+  Manager.create(req.body)
+    .then(function(dbProduct) {
+     
+      res.json(dbProduct);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
+    });
+});
+
+router.get('/addCatergory', async (req, res, next) => {
+  try {
+    const catergory = await catergory.find();
+    console.log(catergory);
+
+  
+
+
+    res.json(catergory);
+  } catch (e) {
+    
+    next(e) 
+  }
+});
 
 module.exports = router;
