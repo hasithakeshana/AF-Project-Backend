@@ -5,6 +5,7 @@ const Schema = mongoose.Schema;
 
 const managerSchema = new Schema({
 
+    id : { type: Number}, 
     firstName : {  type : String   },
     lastName : {  type : String   },
     email : {  type : String   },
