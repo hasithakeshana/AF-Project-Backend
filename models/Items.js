@@ -5,40 +5,47 @@ const Schema = mongoose.Schema;
 
 // Using Schema constructor, create a ItemSchema
 const ItemSchema = new Schema({
-  id: {
+  itemID: {
     type: String,
   },
-  title: {
-    type: String,
-    
-  },
-  description: {
-    type: String,
-  },
-  category: {
+  name: {
     type: String,
   },
   price: {
     type: Number,
+    minimum: 1,
   },
-  quantity: {
+  discount: {
     type: Number,
-   
+    default: 0,
+    max: 99,
   },
-  productImage: {
+  description: {
     type: String,
+  },
+  mainCategory: {
+    type: String,
+  },
+  subCategory: {
+    type: String,
+  },
+  quantityInCart: {
+    type: Number,
+    min: 1,
+  },
+  cartIn: {
+    type: Boolean,
+    default: false,
+  },
+  images: {
+    type: Array,
     
   },
-  // reviews: [{
-  //   type: Schema.Types.ObjectId,
-  //   ref: 'Review'
-  // }]
   ratings: [{
     userName: {type: String},
     rate : {type: Number},
-    comment : {type : String}
-   
-     }],
+    comment : {type : String}   
+  }],
 
   
 });

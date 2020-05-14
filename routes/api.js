@@ -5,6 +5,7 @@ const router = express.Router();
 const User = require('../models/user');
 const Product = require('../models/Product');
 const Review = require('../models/Review');
+const Category = require('../models/Category');
 
 const Items = require('../models/Items');
 
@@ -15,7 +16,8 @@ const storage = multer.diskStorage({
     cb(null, './uploads');
   },
   filename: function(req, file, cb) {
-    cb(null, file.originalname);
+    const fileName = Date.now() + '_' + file.originalname;
+    cb(null, fileName);
   }
 });
 
@@ -137,19 +139,28 @@ router.delete('/users/:id',function(req,res,next){
     //res.send({type : 'DELETE'});
 });
 
-router.post("/items", upload.single('productImage') , (req, res) => {   // add an item
+router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add an item
 
+  const reqFiles = [];
+  const url = req.protocol + '://' + req.get('host') + '/'
+  for (var i = 0; i < req.files.length; i++) {
+    reqFiles.push(url + req.files[i].path)
+  }
     //image upload
-    console.log("file",req.file);
+    console.log("file",reqFiles);
 
     const product = {
-      title : req.body.title,
+      itemId: req.body.itemId,
+      name : req.body.title,
       description: req.body.description,
-      category: req.body.category,
+      mainCategory: req.body.category,
+      subCategory: req.body.subCategory,
       price: req.body.price,
-      quantity: req.body.quantity,
-      productImage: req.file.path
+      discount: req.body.discount,
+      quantityInCart: req.body.quantity,
+      images: reqFiles,
     }
+
     console.log(product);
     Items.create(product)
       .then(function(items) {
@@ -160,7 +171,7 @@ router.post("/items", upload.single('productImage') , (req, res) => {   // add a
         // If an error occurred, send it to the client
         res.json(err);
       });
-  });
+});
 
 
 router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating with comment to given product
@@ -308,12 +319,41 @@ router.get('/items', async (req, res, next) => {
       
 
 
-        res.json(items);
+        res.send(items);
       } catch (e) {
         
         next(e) 
       }
+});
+
+router.get('/category', async (req, res, next) => {
+  try {
+    const categories = await Category.find();
+    console.log(categories);
+
+    res.send(categories);
+
+  } catch (e) {
+    
+    next(e) 
+  }
+});
+
+router.post("/category", (req, res) => {
+
+  const product = {
+    category: req.body.category,
+    subCategory: req.body.subCategory,
+  }
+  console.log(product);
+  Category.create(product)
+    .then(function(categories) {
+     
+      res.json(categories);
+    })
+    .catch(function(err) {
+      // If an error occurred, send it to the client
+      res.json(err);
     });
-
-
+});
 module.exports = router;
