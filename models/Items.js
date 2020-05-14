@@ -34,9 +34,14 @@ const ItemSchema = new Schema({
     date : {type: Date}
      }],
 
-     productImage : {type:String},
+     images :[
+       {
+        productImage : {type:String}
+       }
+      
+      ],
   
-});
+});//productImage
 
 // Create model from the schema
 var Item = mongoose.model("Items", ItemSchema);

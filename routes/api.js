@@ -3,7 +3,7 @@ const express = require('express');
 const router = express.Router();
 
 const User = require('../models/user');
-const Product = require('../models/Product');
+// const Product = require('../models/Product');
 const Review = require('../models/Review');
 const mongoose = require("mongoose");
 const multer = require('multer');
@@ -17,7 +17,8 @@ const storage = multer.diskStorage({
   //     cb(null, new Date().toISOString().replace(/:/g, '-') +'-'+ file.originalname);
   // }
   filename: function(req,file,cb){
-    cb(null, Date.now() + file.originalname);
+    //cb(null, Date.now() + file.originalname);
+    cb(null, new Date().toISOString().replace(/:/g, '-') +'-'+ file.originalname);
 }
 });
 
@@ -25,6 +26,8 @@ const storage = multer.diskStorage({
 const upload = multer({storage:storage});
 
 const Items = require('../models/Items');
+
+const Products = require('../models/Product');
 
 router.get('/users',function(req,res){
 
@@ -116,22 +119,27 @@ router.delete('/users/:id',function(req,res,next){
     //res.send({type : 'DELETE'});
 });
 
-router.post("/items",upload.single('productImage') ,function(req, res) {   // add an item
+router.post("/items",function(req, res) {   // add an item
 
-    console.log(req.file);
+   // console.log(req.file);
 
-    const item = new Items({
+    const product = new Products({
 
-      _id : new mongoose.Types.ObjectId(),
+      
+      itemID : req.body.itemID,
       name : req.body.name,
-      quantity: req.body.quantity,
       price : req.body.price,
       description : req.body.description,
-      productImage : req.file.filename
+      mainCategory :  req.body.mainCategory,
+      subCategory :  req.body.subCategory,
+      quantityInCart : req.body.quantityInCart,
+      cartIn : req.body.cartIn,
+      quantity : req.body.quantity
+     
 
     });
 
-    item.save().then(function(dbProduct) {
+    product.save().then(function(dbProduct) {
        
           res.json(dbProduct);
         })
@@ -164,7 +172,35 @@ router.post("/items",upload.single('productImage') ,function(req, res) {   // ad
       
       next(e) 
     }
+  });//5ebba697274b830ec4515452
+
+  router.post("/UpdateImages/:id",upload.single('productImage'), async (req, res) =>{   // add a items for wishlist
+    
+    console.log(req.params.id);
+    console.log('body',req.body); // get the username or userid
+
+    console.log(req.file);
+        try{
+    
+          const itemAdd = {productImage :req.file.filename}
+        //const image = req.file.filename;
+  
+         //console.log('itemAdd',itemAdd);
+        // const productImage = req.file.filename;
+          
+         const response = await Products.findOneAndUpdate({ _id: req.params.id }, {$push: {images: itemAdd}}, { new: true });
+     
+        console.log('res',response);
+  
+         res.send(JSON.stringify({message:"add image " , res : response } ));
+  
+        }catch(e)
+        {
+          console.log(e);
+        }
+    
   });
+  
 router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating with comment to given product
     
 
@@ -173,7 +209,7 @@ router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating 
       console.log('apiiiiiiiiiiiiiiiiiiiiii  body',req.body);
       console.log('apiiiiii id',req.params.id);
 
-      const item = await Items.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: req.body}}, { new: true });
+      const item = await Products.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: req.body}}, { new: true });
 
       console.log(item);
 
@@ -193,7 +229,7 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
 
   try{
 
-    const item = await Items.findOne({_id : req.params.id});
+    const item = await Products.findOne({_id : req.params.id});
 
     console.log(item.ratings);
 
@@ -276,6 +312,7 @@ router.get('/items/:id', async (req, res, next) => {
     });
 
 
+
 router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for wishlist
     
   console.log(req.params.id);
@@ -343,20 +380,7 @@ router.post("/addItemWishListFromCart/:id", async (req, res) =>{   // add a item
     console.log('body',req.body); // get the username or userid
         try{
     
-         
-  
-          // const USER = await User.findOne({_id : req.params.id}); // find the item
-    
-          // console.log('USER',USER);
-
-
-
-    // for(let ratings of item.ratings)
-    // {
-    //   console.log(ratings.userName);
-
-    // }
-  
+      
           const itemAdd = req.body;
   
          console.log('itemAdd',itemAdd);
