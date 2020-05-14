@@ -162,7 +162,7 @@ router.post("/items",function(req, res) {   // add an item
   router.get('/allitems', async (req, res, next) => {
     try {
 
-      const item = await Items.find();
+      const item = await Products.find();
 
     
       res.send(JSON.stringify({message:"item details" , item : item } ));
@@ -231,7 +231,7 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
 
     const item = await Products.findOne({_id : req.params.id});
 
-    console.log(item.ratings);
+    console.log('items ratinggggggggggggggggggggggggggggg',item.ratings);
 
     let sum = 0;
 
@@ -299,7 +299,7 @@ next(e)
 router.get('/items/:id', async (req, res, next) => {
       try {
 
-        const item = await Items.findOne({_id : req.params.id});
+        const item = await Products.findOne({_id : req.params.id});
 
       
         res.send(JSON.stringify({message:"item details" , item : item } ));
