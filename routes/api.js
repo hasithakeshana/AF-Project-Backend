@@ -148,15 +148,7 @@ router.post("/items",function(req, res) {   // add an item
           res.json(err);
         });
 
-    // Items.create(req.body)
-    //   .then(function(dbProduct) {
-       
-    //     res.json(dbProduct);
-    //   })
-    //   .catch(function(err) {
-    //     // If an error occurred, send it to the client
-    //     res.json(err);
-    //   });
+    
   });
 
   router.get('/allitems', async (req, res, next) => {
@@ -223,6 +215,58 @@ router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating 
     }
 
  });
+
+ router.post("/checkUserIsRated/:id", async (req, res) =>{   // add a rating with comment to given product
+    
+
+  try{
+
+    console.log('apii  body',req.body);
+    console.log('apiiiiii id',req.params.id);
+
+    const user = req.body.username;
+
+    const item = await Products.findOne({_id : req.params.id});
+
+    console.log('items ratings',item.ratings);
+
+    //5ebcf2228739513778b72153
+    let isRated = false;
+    let userIS = null;
+
+    for(let rating of item.ratings)
+    {
+      console.log(rating.userName);
+      if(rating.userName == user)
+      {
+        console.log('found user');
+        console.log('rating',rating);
+        isRated = true;
+        userIS = rating;
+      }
+      
+    }
+
+    if(isRated)
+    {
+      res.send(JSON.stringify({message:"user rated" ,rated:true ,rating:userIS  } ));
+    }
+    else
+    {
+      res.send(JSON.stringify({message:"user not rated",rated:false } ));
+    }
+
+    
+    
+    //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
+
+
+  }catch(e)
+  {
+    console.log(e);
+  }
+
+});
 
 
 router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ratings for given product id
