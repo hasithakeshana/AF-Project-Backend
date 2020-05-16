@@ -37,9 +37,7 @@ const ProductSchema = new Schema({
   cartIn:{
       type : Boolean,
   },
-  quantity:{
-    type: Number,
-  },
+  
   ratings: [{
     userName: {type: String},
     rate : {type: Number},
@@ -54,6 +52,44 @@ const ProductSchema = new Schema({
       
       ],
 
+      quantity:{
+          sQuantity :{
+            red : {type:Number , default: 0},
+            black : {type:Number , default: 0},
+            white : {type:Number , default: 0},
+            green : {type:Number , default: 0},
+            pink : {type:Number , default: 0},
+            blue : {type:Number , default: 0},
+            multi : {type:Number , default: 0},
+          },
+          mQuantity:{
+            red : {type:Number , default: 0},
+            black : {type:Number , default: 0},
+            white : {type:Number , default: 0},
+            green : {type:Number , default: 0},
+            pink : {type:Number , default: 0},
+            blue : {type:Number , default: 0},
+            multi : {type:Number , default: 0},
+          },
+          lQuantity:{
+            red : {type:Number , default: 0},
+            black : {type:Number , default: 0},
+            white : {type:Number , default: 0},
+            green : {type:Number , default: 0},
+            pink : {type:Number , default: 0},
+            blue : {type:Number , default: 0},
+            multi : {type:Number , default: 0},
+          },
+          xlQuantity:{
+            red : {type:Number , default: 0},
+            black : {type:Number , default: 0},
+            white : {type:Number , default: 0},
+            green : {type:Number , default: 0},
+            pink : {type:Number , default: 0},
+            blue : {type:Number , default: 0},
+            multi : {type:Number , default: 0},
+          }
+      }
   
 });
 
