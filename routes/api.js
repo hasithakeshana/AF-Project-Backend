@@ -130,7 +130,9 @@ router.post("/items",function(req, res) {   // add an item
       subCategory :  req.body.subCategory,
       quantityInCart : req.body.quantityInCart,
       cartIn : req.body.cartIn,
-      quantity : req.body.quantity
+      quantity : req.body.quantity,
+      discount : req.body.discount,
+
      
 
     });
