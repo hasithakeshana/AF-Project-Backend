@@ -39,8 +39,6 @@ router.get('/users',function(req,res){
 
 router.post('/signup',function(req,res,next){
 
-  console.log(req.body);
-
  User.create(req.body).then(function(user){
 
 res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
@@ -61,12 +59,10 @@ res.send(JSON.stringify({success:"registerd successfully" , code : 'reg', user :
 
 router.post('/login',function(req,res,next){
 
-    console.log(req.body);
-  
+
     User.findOne({ email: req.body.email}, function(err, user) {
 
-        console.log('user',user);
-   
+
         if(user === null)
         {
            //res.send("User doesn't Exists");
@@ -167,11 +163,7 @@ router.post("/items",function(req, res) {   // add an item
   });//5ebba697274b830ec4515452
 
   router.post("/UpdateImages/:id",upload.single('productImage'), async (req, res) =>{   // add a items for wishlist
-    
-    console.log(req.params.id);
-    console.log('body',req.body); // get the username or userid
 
-    console.log(req.file);
         try{
     
           const itemAdd = {productImage :req.file.filename}
@@ -181,8 +173,6 @@ router.post("/items",function(req, res) {   // add an item
         // const productImage = req.file.filename;
           
          const response = await Products.findOneAndUpdate({ _id: req.params.id }, {$push: {images: itemAdd}}, { new: true });
-     
-        console.log('res',response);
   
          res.send(JSON.stringify({message:"add image " , res : response } ));
   
@@ -198,14 +188,8 @@ router.post("/addRatingWithComment/:id", async (req, res) =>{   // add a rating 
 
     try{
 
-      console.log('apiiiiiiiiiiiiiiiiiiiiii  body',req.body);
-      console.log('apiiiiii id',req.params.id);
-
       const item = await Products.findOneAndUpdate({ _id: req.params.id }, {$push: {ratings: req.body}}, { new: true });
 
-      console.log(item);
-
-      
       res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
 
 
@@ -275,8 +259,6 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
 
     const item = await Products.findOne({_id : req.params.id});
 
-    console.log('items ratinggggggggggggggggggggggggggggg',item.ratings);
-
     let sum = 0;
 
     let noOfRatings = 0;
@@ -285,8 +267,6 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
 
     for(let ratings of item.ratings)
     {
-      console.log(ratings.userName);
-
     }
 
    
@@ -318,15 +298,9 @@ router.get("/getRatingsWithComments/:id", async (req, res ,next) => {  // get ra
       sum = sum + value.rate;
     }
 
-    console.log('no of ratings',noOfRatings);
-
-    console.log(a,b,c,d,e);
-
-    console.log('avg ',sum /item.ratings.length);
     const avgs = sum /item.ratings.length;
-    console.log('sum',sum);
     const avg = avgs.toFixed(2);
-   
+
 
     res.send(JSON.stringify({message:"item details" ,countRatings : {noOfRatings} , ratings: item.ratings, avg : {avg} , item : item , noOfRatings : {one: a , two : b , three : c , four : d , five : e } } ));
   }
@@ -358,35 +332,22 @@ router.get('/items/:id', async (req, res, next) => {
 
 
 router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for wishlist
-    
-  console.log(req.params.id);
-  console.log('body',req.body); // get the username or userid
+
       try{
   
        
 
         const item = await Items.findOne({_id : req.params.id}); // find the item
-  
-        console.log(item);
 
         const itemAdd = {itemName : item.name,price : item.price,quantity:item.quantity}
-
-        console.log('itemAdd',itemAdd);
-
         const user = await User.findOne({_id : req.body.userId});
-
-        console.log('user',user.wishlist);
-
         const list = await user.wishlist;
 
         var exists = false;
 
         for (let x of list) {
-          console.log('item 11111',x.itemName);
           if(x.itemName === item.name)
           {
-              console.log('alreadyy existssssssssssssssss');
-             
               exists = true;
           }
 
@@ -400,10 +361,7 @@ router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for 
 
           const response = await User.findOneAndUpdate({ _id: req.body.userId }, {$push: {wishlist: itemAdd}}, { new: true });
           // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
-        
-          console.log('res',response);
-  
-          res.send(JSON.stringify({message:"add item successfully to wishlist" , wishlist : response.wishlist } ));
+            res.send(JSON.stringify({message:"add item successfully to wishlist" , wishlist : response.wishlist } ));
 
         }
 
@@ -419,23 +377,16 @@ router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for 
 
 
 router.post("/addItemWishListFromCart/:id", async (req, res) =>{   // add a items for wishlist
-    
-    console.log(req.params.id);
-    console.log('body',req.body); // get the username or userid
+
         try{
     
       
           const itemAdd = req.body;
-  
-         console.log('itemAdd',itemAdd);
-  
-          
+
          const response = await User.findOneAndUpdate({ _id: req.params.id }, {$push: {cart: itemAdd}}, { new: true });
         // //   // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
-        
-        console.log('res',response);
-  
-         res.send(JSON.stringify({message:"add item successfully to cart" , wishlist : response.cart } ));
+
+            res.send(JSON.stringify({message:"add item successfully to cart" , wishlist : response.cart } ));
   
         }catch(e)
         {
@@ -448,10 +399,6 @@ router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
     try {
 
       const response = await User.findOne({_id : req.params.id});
-
-      console.log(response.wishlist);
-
-     
      res.send(JSON.stringify({message:"wishlist details" , wishlist : response.wishlist } ));
       
     } catch (e) {
@@ -463,17 +410,10 @@ router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
 router.post('/deleteWishListProduct', async (req, res, next) => { // delete item from wishlist
     try {
 
-      console.log('body',req.body);
-
       const response = await User.findOne({_id : req.body.userId });
 
-      console.log(response.wishlist);
-
-     
       const responses = await User.updateOne({_id : req.body.userId },{'$pull':{ 'wishlist':{'_id': req.body.wishListOredrId }}},{multi:true});
-     console.log('res',responses);
 
-     
      res.send(JSON.stringify({message:"deleted successfully" , wishlist :responses} ));
       
     } catch (e) {
