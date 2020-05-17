@@ -338,6 +338,10 @@ next(e)
 
 
 });
+// collection.update( 
+//   { _id: data.id, "photos.name": "photo2" }, 
+//   { $set: { "photos.$.data": "yourdata" } }
+// )
 
 
 router.get('/items/:id', async (req, res, next) => {
@@ -354,6 +358,55 @@ router.get('/items/:id', async (req, res, next) => {
         next(e) 
       }
     });
+
+router.put('/updateRating/:id', async (req, res, next) => {
+      try {
+
+        console.log("id",req.params.id);
+
+    const response =   await  Products.updateOne(
+          {
+            "_id" : req.body.productId,
+            "ratings._id" : req.params.id
+          },
+          {
+            "$set" :
+            {
+                "ratings.$.rate": req.body.rate,
+                "ratings.$.comment": req.body.comment,
+
+            }
+          }
+        );
+      
+        res.send(JSON.stringify({message:"rate updated" , item : response } ));
+
+        
+      } catch (e) {
+        
+        next(e) 
+      }
+    });
+
+router.delete('/deleteRating/:id', async (req, res, next) => {
+      try {
+
+        console.log("id",req.params.id);
+
+    const response =   await  Products.updateOne(
+      { _id: req.body.productId },
+      { $pull: { 'ratings': { _id: req.params.id } } }
+        );
+      
+        res.send(JSON.stringify({message:"rate deleted" , item : response } ));
+
+        
+      } catch (e) {
+        
+        next(e) 
+      }
+    });
+
 
 
 
