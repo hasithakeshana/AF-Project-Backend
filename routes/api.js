@@ -331,6 +331,108 @@ router.get('/items/:id', async (req, res, next) => {
       }
     });
 
+    router.post("/checkUserIsRated/:id", async (req, res) =>{   // add a rating with comment to given product
+    
+
+      try{
+    
+        console.log('apii  body',req.body);
+        console.log('apiiiiii id',req.params.id);
+    
+        const user = req.body.username;
+    
+        const item = await Products.findOne({_id : req.params.id});
+    
+        console.log('items ratings',item.ratings);
+    
+        //5ebcf2228739513778b72153
+        let isRated = false;
+        let userIS = null;
+    
+        for(let rating of item.ratings)
+        {
+          console.log(rating.userName);
+          if(rating.userName == user)
+          {
+            console.log('found user');
+            console.log('rating',rating);
+            isRated = true;
+            userIS = rating;
+          }
+          
+        }
+    
+        if(isRated)
+        {
+          res.send(JSON.stringify({message:"user rated" ,rated:true ,rating:userIS  } ));
+        }
+        else
+        {
+          res.send(JSON.stringify({message:"user not rated",rated:false } ));
+        }
+    
+        
+        
+        //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
+    
+    
+      }catch(e)
+      {
+        console.log(e);
+      }
+    
+    });
+    
+    
+    
+router.put('/updateRating/:id', async (req, res, next) => {
+          try {
+    
+            console.log("id",req.params.id);
+    
+        const response =   await  Products.updateOne(
+              {
+                "_id" : req.body.productId,
+                "ratings._id" : req.params.id
+              },
+              {
+                "$set" :
+                {
+                    "ratings.$.rate": req.body.rate,
+                    "ratings.$.comment": req.body.comment,
+    
+                }
+              }
+            );
+          
+            res.send(JSON.stringify({message:"rate updated" , item : response } ));
+    
+            
+          } catch (e) {
+            
+            next(e) 
+          }
+        });
+    
+router.delete('/deleteRating/:id', async (req, res, next) => {
+          try {
+    
+            console.log("id",req.params.id);
+    
+        const response =   await  Products.updateOne(
+          { _id: req.body.productId },
+          { $pull: { 'ratings': { _id: req.params.id } } }
+            );
+          
+            res.send(JSON.stringify({message:"rate deleted" , item : response } ));
+    
+            
+          } catch (e) {
+            
+            next(e) 
+          }
+        });
+    
 
 
 router.post("/addItemToWishList/:id", async (req, res) =>{   // add a items for wishlist
