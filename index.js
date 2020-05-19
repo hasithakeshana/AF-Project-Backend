@@ -24,7 +24,7 @@ mongoose.Promise = global.Promise;
 // });
 
 const uri =
-	"mongodb+srv://rashmika:Rashmika@fashionstore-k14re.mongodb.net/test?retryWrites=true&w=majority";
+	"mongodb+srv://rashmika:Rashmika@fashionstore-k14re.mongodb.net/fashionstore?retryWrites=true&w=majority";
 // path of the mongodb cloud
 
 
