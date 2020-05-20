@@ -41,16 +41,9 @@ router.post('/signup', function (req, res, next) {
 
     User.create(req.body).then(function (user) {
 
-        res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-        res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
+    
+    res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
 
-//     res.setHeader('Content-Type', 'application/json');
-// res.send({ data: 'user created in db' });
-
-        res.setHeader('Content-Type', 'application/json');
-        res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
-//res.json({ user: 'foo' });
 
     }).catch(next);
 
@@ -190,42 +183,42 @@ router.post("/addRatingWithComment/:id", async (req, res) => {   // add a rating
 
 });
 
-router.post("/checkUserIsRated/:id", async (req, res) => {   // add a rating with comment to given product
+// router.post("/checkUserIsRated/:id", async (req, res) => {   // add a rating with comment to given product
 
 
-    try {
-        const user = req.body.username;
-        const item = await Products.findOne({_id: req.params.id});
-        //5ebcf2228739513778b72153
-        let isRated = false;
-        let userIS = null;
+//     try {
+//         const user = req.body.username;
+//         const item = await Products.findOne({_id: req.params.id});
+//         //5ebcf2228739513778b72153
+//         let isRated = false;
+//         let userIS = null;
 
-        for (let rating of item.ratings) {
-            console.log(rating.userName);
-            if (rating.userName == user) {
-                console.log('found user');
-                console.log('rating', rating);
-                isRated = true;
-                userIS = rating;
-            }
+//         for (let rating of item.ratings) {
+//             console.log(rating.userName);
+//             if (rating.userName == user) {
+//                 console.log('found user');
+//                 console.log('rating', rating);
+//                 isRated = true;
+//                 userIS = rating;
+//             }
 
-        }
+//         }
 
-        if (isRated) {
-            res.send(JSON.stringify({message: "user rated", rated: true, rating: userIS}));
-        } else {
-            res.send(JSON.stringify({message: "user not rated", rated: false}));
-        }
-
-
-        //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
+//         if (isRated) {
+//             res.send(JSON.stringify({message: "user rated", rated: true, rating: userIS}));
+//         } else {
+//             res.send(JSON.stringify({message: "user not rated", rated: false}));
+//         }
 
 
-    } catch (e) {
-        console.log(e);
-    }
+//         //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
 
-});
+
+//     } catch (e) {
+//         console.log(e);
+//     }
+
+// });
 
 
 router.get("/getRatingsWithComments/:id", async (req, res, next) => {  // get ratings for given product id
@@ -408,28 +401,39 @@ router.post("/addItemToWishList/:id", async (req, res) => {   // add a items for
 
     try {
 
-        const item = await Items.findOne({_id: req.params.id}); // find the item
+        const item = await Products.findOne({_id: req.params.id}); // find the item
 
-        const itemAdd = {itemName: item.name, price: item.price, quantity: item.quantity}
+        console.log('item wishlist',item._id);
+
+        const itemAdd = {itemID : item._id,itemName: item.name,mainCategory :item.mainCategory, price: item.price,
+            image : item.images[0].productImage}
+
+        console.log('item',itemAdd);
+
         const user = await User.findOne({_id: req.body.userId});
+
+        console.log('user wishlist',user);
+
         const list = await user.wishlist;
+
+        console.log('user list',list);
 
         var exists = false;
 
         for (let x of list) {
-            if (x.itemName === item.name) {
+            console.log('x',x.itemID)
+            if (x.itemID == item._id) {
                 exists = true;
             }
-
         }
 
         if (exists) {
-            res.send(JSON.stringify({message: "alreadyy existssssssssssssssss"}));
+            res.send(JSON.stringify({message: "alreadyy exists",exists:true}));
         } else {
 
             const response = await User.findOneAndUpdate({_id: req.body.userId}, {$push: {wishlist: itemAdd}}, {new: true});
             // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
-            res.send(JSON.stringify({message: "add item successfully to wishlist", wishlist: response.wishlist}));
+            res.send(JSON.stringify({message: "add item successfully to wishlist", wishlist: response.wishlist,exists:false}));
 
         }
 
@@ -441,6 +445,7 @@ router.post("/addItemToWishList/:id", async (req, res) => {   // add a items for
 });
 
 
+
 router.post("/addItemWishListFromCart/:id", async (req, res) => {   // add a items for wishlist
 
     try {
@@ -449,7 +454,7 @@ router.post("/addItemWishListFromCart/:id", async (req, res) => {   // add a ite
         const itemAdd = req.body;
 
         const response = await User.findOneAndUpdate({_id: req.params.id}, {$push: {cart: itemAdd}}, {new: true});
-        // //   // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
+       
 
         res.send(JSON.stringify({message: "add item successfully to cart", wishlist: response.cart}));
 
@@ -463,7 +468,16 @@ router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
     try {
 
         const response = await User.findOne({_id: req.params.id});
-        res.send(JSON.stringify({message: "wishlist details", wishlist: response.wishlist}));
+
+        let total=0;
+
+        for (let item of response.wishlist) {
+            total = total + item.price;
+        }
+
+        console.log('total',total);
+
+        res.send(JSON.stringify({message: "wishlist details", wishlist: response.wishlist,total:total}));
 
     } catch (e) {
 
@@ -478,6 +492,7 @@ router.post('/deleteWishListProduct', async (req, res, next) => { // delete item
 
         const responses = await User.updateOne({_id: req.body.userId}, {'$pull': {'wishlist': {'_id': req.body.wishListOredrId}}}, {multi: true});
 
+        console.log('responses delete',responses,response);
         res.send(JSON.stringify({message: "deleted successfully", wishlist: responses}));
 
     } catch (e) {
