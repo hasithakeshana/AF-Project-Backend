@@ -1,5 +1,6 @@
 const express = require('express');
 const routes = require('./routes/api');
+const passport = require("passport");
 
 const mongoose = require('mongoose');
 
@@ -17,15 +18,20 @@ app.use(cors());
 
 //connect to mongodb
 
-mongoose.connect('mongodb://localhost/FashionStore');
+mongoose.connect('mongodb://localhost/FashionStore', { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
 mongoose.Promise = global.Promise;
 
-mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false});
+mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
 
 // mongoose.connect('',() => {
 // console.log('connects to the db');
 
 // });
+
+// Passport middleware
+app.use(passport.initialize());
+// Passport config
+require("./config/passport")(passport);
 
 app.use(express.json());  //  useNewUrlParser: true, useFindAndModify: false
 app.use(express.urlencoded({extended:true}));

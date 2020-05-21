@@ -1,8 +1,13 @@
 const express = require('express');
-
 const router = express.Router();
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require('crypto');
+const passport = require("passport");
+const nodemailer = require('nodemailer');
 
 const User = require('../models/user');
+const Token = require('../models/Token');
 const Product = require('../models/Product');
 const Review = require('../models/Review');
 const Category = require('../models/Category');
@@ -40,9 +45,7 @@ const upload = multer({
   fileFilter: fileFilter
 });
 
-router.get('/users',function(req,res){
-    res.send({type : 'GET'});
-});
+
 
 router.post('/edituser',function(req,res){
   User.findOne({ email: req.body.email}, function(err, user){
@@ -58,23 +61,54 @@ router.post('/edituser',function(req,res){
 });
 
 router.post('/signup',function(req,res,next){
-
+  
   console.log(req.body);
 
- User.create(req.body).then(function(user){
+  User.findOne({ email: req.body.email}). then(user =>{
+    if(user) {
+      res.status(400).send({email:"User with email already exists"} );
+    } else {
+      
+      //encrypt password before saving in database
+      bcrypt.genSalt(10, (err, salt) => {
+        bcrypt.hash(req.body.password, salt, (err, hash) => {
+          if (err) throw err;
+          req.body.password = hash;
+          
+          User.create(req.body).then(function(user){
 
-res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
-res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
-  
-//     res.setHeader('Content-Type', 'application/json');
-// res.send({ data: 'user created in db' });
+          res.header("Access-Control-Allow-Origin", "http://localhost:4000"); // update to match the domain you will make the request from
+          res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+          res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
+            
 
-res.setHeader('Content-Type', 'application/json');
-res.send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
-//res.json({ user: 'foo' });
+          res.setHeader('Content-Type', 'application/json');
+          //res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
+          
+          //new verification token is created for the new user
+                var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
+                
+                //save the verification token
+                token.save(function (err) {
+                  if (err) {
+                    return res.status(500).send({ msg: err.message }); 
+                  }
 
- }).catch(next);
+                  //send the email
+                  var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: 'donotrep2ly921@gmail.com', pass: '0711920012' }, tls: { rejectUnauthorized: false } });                                          
+                  var mailOptions = { from: 'donotrep2ly921@gmail.com', to: user.email, subject: 'Account Verification Token', text: 'Hello, \n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  user.email + '\n' }; 
+                  transporter.sendMail(mailOptions, function (err) {
+                    if (err) { return res.status(500).send({ msg: err.message }); }
+                    res.status(200).send('A verification email has been sent to ' + user.email + '.');
+                  });
+                });
+        })
+      })
+
+            
+    }).catch(next);
+  }
+});
 
 });
 
@@ -90,41 +124,67 @@ router.post('/login',function(req,res,next){
         if(user === null)
         {
            //res.send("User doesn't Exists");
-            res.send(JSON.stringify({message:"User doesn't Exists" , code : 'no'} ));
+           res.status(401).send(JSON.stringify({message:"User does not exist" , code : 'no'} ));
         }
 
         else if (user.email === req.body.email ){
 
-            if(user.password === req.body.password){
-                res.send(JSON.stringify({message:"login successfully" , code : 'login', user : user} ));
-            }
-            else{
-                res.send(JSON.stringify({message:"Invalid Password" , code : 'no'} ));
-            }
-        }
+          bcrypt.compare(req.body.password, user.password).then(isMatch => {
+            if(isMatch) {
+              //User matched
+              //res.status(401).send(JSON.stringify({message:"login successfully" , code : 'login', user : user} ));
+              // Create JWT Payload
+              const payload = {
+                id: user.id,
+                name: user.name
+              };
 
-        else if (user.email === req.body.email && user.password === req.body.password)
-         {
-            res.send(JSON.stringify({message:"login successfully" , code : 'login', user : user} ));
-         }
+              // Sign token
+              jwt.sign(
+                payload,
+                "secret",
+                {
+                  expiresIn: 31556926 // 1 year in seconds
+                },
+                (err, token) => {
+                  res.json({
+                    success: true,
+                    token: "Bearer " + token
+                  });
+                }
+              );
+            } else{
+              res.status(400).send(JSON.stringify({message:"Invalid Password" , code : 'no'} ));
+            }
+          })
+            
+        }
 
     });
   
   });
 
-
-router.put('/users/:email',function(req,res){
-
-    User.findByIdAndUpdate({email : req.params.email},req.body).then(function(){
-
-     User.findOne({email : req.params.email}).then(function(user){
-
-            res.send(user);
-     });
-    });
-
+//route to confirm email
+router.get('/confirmation/:token/:email', function (req, res, next){
   
+  Token.findOne({ token: req.params.token }, function (err, token) {
+    if (!token) return res.status(400).send({ type: 'not-verified', msg: 'We were unable to find a valid token. Your token my have expired.' });
+
+    // If we found a token, find a matching user
+    User.findOne({ _id: token._userId, email: req.params.email }, function (err, user) {
+        if (!user) return res.status(400).send({ msg: 'We were unable to find a user for this token.' });
+        if (user.isVerified) return res.status(400).send({ type: 'already-verified', msg: 'This user has already been verified.' });
+
+        // Verify and save the user
+        user.isVerified = true;
+        user.save(function (err) {
+            if (err) { return res.status(500).send({ msg: err.message }); }
+            res.status(200).send("The account has been verified. Please log in.");
+        });
+    });
 });
+});
+
 
 
 router.delete('/users/:id',function(req,res,next){
@@ -150,14 +210,13 @@ router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add
     console.log("file",reqFiles);
 
     const product = {
-      itemId: req.body.itemId,
       name : req.body.title,
       description: req.body.description,
       mainCategory: req.body.category,
       subCategory: req.body.subCategory,
       price: req.body.price,
       discount: req.body.discount,
-      quantityInCart: req.body.quantity,
+      quantity: req.body.quantity,
       images: reqFiles,
     }
 
@@ -326,7 +385,7 @@ router.get('/items', async (req, res, next) => {
       }
 });
 
-router.get('/category', async (req, res, next) => {
+router.get('/category', async (req, res, next) => { //get category collection for adding items on frontend
   try {
     const categories = await Category.find();
     console.log(categories);
@@ -339,21 +398,5 @@ router.get('/category', async (req, res, next) => {
   }
 });
 
-router.post("/category", (req, res) => {
 
-  const product = {
-    category: req.body.category,
-    subCategory: req.body.subCategory,
-  }
-  console.log(product);
-  Category.create(product)
-    .then(function(categories) {
-     
-      res.json(categories);
-    })
-    .catch(function(err) {
-      // If an error occurred, send it to the client
-      res.json(err);
-    });
-});
 module.exports = router;

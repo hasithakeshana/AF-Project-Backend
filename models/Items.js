@@ -3,6 +3,17 @@ const mongoose = require("mongoose");
 // Get the Schema constructor
 const Schema = mongoose.Schema;
 
+//color array used to keep the code dry
+const colors = {
+  red: {type:Number , default: 0} ,
+  black: {type:Number , default: 0} ,
+  white: {type:Number , default: 0} ,
+  green: {type:Number , default: 0} ,  
+  pink: {type:Number , default: 0} ,
+  blue: {type:Number , default: 0} ,
+  multi: {type:Number , default: 0} , 
+};
+
 // Using Schema constructor, create a ItemSchema
 const ItemSchema = new Schema({
   itemID: {
@@ -29,6 +40,20 @@ const ItemSchema = new Schema({
   subCategory: {
     type: String,
   },
+  sizeAvailable: {
+    type: Boolean,
+  },
+  quantity: {
+    type: Number, 
+    required: true,
+    minimum: 1,
+  },
+  /*quantity: [{
+    sQuantity: [{colors}] ,
+    mQuantity: [{colors}] ,
+    lQuantity: [{colors}] ,
+    xlQuantity: [{colors}] ,   
+  }],*/
   quantityInCart: {
     type: Number,
     min: 1,
@@ -44,7 +69,8 @@ const ItemSchema = new Schema({
   ratings: [{
     userName: {type: String},
     rate : {type: Number},
-    comment : {type : String}   
+    comment : {type : String},
+    date : {type: Date}
   }],
 
   
