@@ -6,8 +6,13 @@ const Schema = mongoose.Schema;
 const UserSchema = new Schema({
 
    
-    email : {  type : String   },
-    password : {  type : String   },
+   
+    firstName : {  type : String   },
+    lastName : {  type : String  },
+    email : {  type : String,  required: true},
+    password : {  type : String ,  required: true  },
+    isVerified: {type: Boolean, default: false},//will be true after email verification
+    role : {  type : String  , default : 'user' },
 
     wishlist: [{
         itemID: {type: String},
@@ -29,7 +34,7 @@ const UserSchema = new Schema({
 
 });
 
-const User = mongoose.model('testUser',UserSchema);
+const User = mongoose.model('testUsers',UserSchema);
 
 
 module.exports = User;

@@ -8,6 +8,12 @@ const mongoose = require("mongoose");
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const Categories = require('../models/Categories');
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const crypto = require('crypto');
+const nodemailer = require("nodemailer");
+//const passport = require("passport");
+const Token = require('../models/Token');
 
 app.use(bodyParser.json());
 const storage = multer.diskStorage({
@@ -37,69 +43,183 @@ router.get('/users', function (req, res) {
 });
 
 
-router.post('/signup', function (req, res, next) {
+// router.post('/signup', function (req, res, next) {
 
-    User.create(req.body).then(function (user) {
+//     User.create(req.body).then(function (user) {
 
     
-    res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
+//     res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
 
 
-    }).catch(next);
+//     }).catch(next);
 
-});
-
-
-router.post('/login', function (req, res, next) {
-
-console.log('login');
-    User.findOne({email: req.body.email}, function (err, user) {
+// });
 
 
-        if (user === null) {
-            //res.send("User doesn't Exists");
-            res.send(JSON.stringify({message: "User doesn't Exists", code: false}));
-        } else if (user.email === req.body.email) {
+// router.post('/login', function (req, res, next) {
 
-            if (user.password === req.body.password) {
-                res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-            } else {
-                res.send(JSON.stringify({message: "Invalid Password", code: false}));
-            }
-        } else if (user.email === req.body.email && user.password === req.body.password) {
-            res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-        }
+// console.log('login');
+//     User.findOne({email: req.body.email}, function (err, user) {
 
+
+//         if (user === null) {
+//             //res.send("User doesn't Exists");
+//             res.send(JSON.stringify({message: "User doesn't Exists", code: false}));
+//         } else if (user.email === req.body.email) {
+
+//             if (user.password === req.body.password) {
+//                 res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
+//             } else {
+//                 res.send(JSON.stringify({message: "Invalid Password", code: false}));
+//             }
+//         } else if (user.email === req.body.email && user.password === req.body.password) {
+//             res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
+//         }
+
+//     });
+
+// });
+
+
+router.post('/signup',function(req,res,next){
+  
+    console.log(req.body);
+  
+    User.findOne({ email: req.body.email}). then(user =>{
+      if(user) {
+        res.status(400).send({email:"User with email already exists"} );
+      } else {
+        
+        //encrypt password before saving in database
+        bcrypt.genSalt(10, (err, salt) => {
+          bcrypt.hash(req.body.password, salt, (err, hash) => {
+            if (err) throw err;
+            req.body.password = hash;
+            
+            User.create(req.body).then(function(user){
+  
+            res.header("Access-Control-Allow-Origin", "http://localhost:4000"); // update to match the domain you will make the request from
+            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+            res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
+              
+  
+            res.setHeader('Content-Type', 'application/json');
+            //res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
+            
+            //new verification token is created for the new user
+                  var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
+                  
+                  //save the verification token
+                  token.save(function (err) {
+                    if (err) {
+                      return res.status(500).send({ msg: err.message }); 
+                    }
+  
+                    //send the email
+                    var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: 'hasithakeshana9900@gmail.com', pass: '9812sliit' }, tls: { rejectUnauthorized: false } });                                          
+                    var mailOptions = { from: 'hasithakeshana9900@gmail.com', to: user.email, subject: 'Account Verification Token', text: 'Hello, \n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  user.email + '\n' }; 
+                    transporter.sendMail(mailOptions, function (err) {
+                      if (err) { return res.status(500).send({ msg: err.message }); }
+                      res.status(200).send('A verification email has been sent to ' + user.email + '.');
+                    });
+                  });
+          })
+        })
+  
+              
+      }).catch(next);
+    }
+  });
+  
+  });
+  
+  
+  
+router.post('/login',function(req,res,next){
+  
+      console.log(req.body);
+    
+      User.findOne({ email: req.body.email}, function(err, user) {
+  
+          console.log('user',user);
+     
+          if(user === null)
+          {
+             //res.send("User doesn't Exists");
+             //res.status(401).send(JSON.stringify({message:"User does not exist" , isValidLogin: true, } ));
+             res.send(JSON.stringify({message: "User does not exist",isValidLogin: false}));
+          }
+  
+          else if (user.email === req.body.email ){
+  
+            bcrypt.compare(req.body.password, user.password).then(isMatch => {
+              if(isMatch) {
+                //User matched
+                //res.status(401).send(JSON.stringify({message:"login successfully" , code : 'login', user : user} ));
+                // Create JWT Payload
+                const payload = {
+                  id: user._id,
+                  name: user.email
+                };
+  
+                console.log('payload',payload);
+  
+                // Sign token
+                jwt.sign(
+                  payload,
+                  "secret",
+                  {
+                    expiresIn: 86400 // 1 day
+                  },
+                  (err, token) => {
+                    // res.json({
+                    //   isValidLogin: true,
+                    //   token: "Bearer " + token,
+                    //   token1 : token
+                    // });
+                    res.send(JSON.stringify({message: "User find",isValidLogin: true,token : token}));
+                  }
+                );
+  
+  
+              } 
+              
+              
+              else{
+               // res.status(400).send(JSON.stringify({message:"Invalid Password" , isValidLogin: false} ));
+                res.send(JSON.stringify({message: "Invalid Password",  isValidLogin: false}));
+              }
+            })
+              
+          }
+  
+      });
+    
     });
+  
+  
+  
+router.get('/confirmation/:token/:email', function (req, res, next){
+    
+    Token.findOne({ token: req.params.token }, function (err, token) {
+      if (!token) return res.status(400).send({ type: 'not-verified', msg: 'We were unable to find a valid token. Your token my have expired.' });
+  
+      // If we found a token, find a matching user
+      User.findOne({ _id: token._userId, email: req.params.email }, function (err, user) {
+          if (!user) return res.status(400).send({ msg: 'We were unable to find a user for this token.' });
+          if (user.isVerified) return res.status(400).send({ type: 'already-verified', msg: 'This user has already been verified.' });
+  
+          // Verify and save the user
+          user.isVerified = true;
+          user.save(function (err) {
+              if (err) { return res.status(500).send({ msg: err.message }); }
+              res.status(200).send("The account has been verified. Please log in.");
+          });
+      });
+  });
+  });
 
-});
 
-
-router.put('/users/:id', function (req, res) {
-
-    User.findByIdAndUpdate({_id: req.params.id}, req.body).then(function () {
-
-        User.findOne({_id: req.params.id}).then(function (user) {
-
-            res.send(user);
-        });
-    });
-
-
-});
-
-
-router.delete('/users/:id', function (req, res, next) {
-
-
-    User.findByIdAndDelete({_id: req.params.id}).then(function (user) {
-
-        res.send(user);
-
-    });
-
-    //res.send({type : 'DELETE'});
-});
 
 
 router.post("/items", function (req, res) {   // add an item
