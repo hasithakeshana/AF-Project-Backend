@@ -16,6 +16,7 @@ const nodemailer = require("nodemailer");
 const Token = require('../models/Token');
 
 app.use(bodyParser.json());
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads/');
@@ -159,7 +160,8 @@ router.post('/login',function(req,res,next){
                 // Create JWT Payload
                 const payload = {
                   id: user._id,
-                  name: user.email
+                  name: user.email,
+                  role: user.role,
                 };
   
                 console.log('payload',payload);

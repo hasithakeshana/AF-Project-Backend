@@ -11,7 +11,7 @@ const UserSchema = new Schema({
     lastName : {  type : String  },
     email : {  type : String,  required: true},
     password : {  type : String ,  required: true  },
-    isVerified: {type: Boolean, default: false},//will be true after email verification
+    isVerified: {type: Boolean, default: false}, //will be true after email verification
     role : {  type : String  , default : 'user' },
 
     wishlist: [{
