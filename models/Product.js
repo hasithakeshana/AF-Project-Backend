@@ -6,7 +6,7 @@ const Schema = mongoose.Schema;
 // Using Schema constructor, create a ProductSchema
 const ProductSchema = new Schema({
   itemID: {
-    type: Number,
+    type: String,
     
   },
   name: {
