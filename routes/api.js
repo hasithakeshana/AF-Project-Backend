@@ -52,22 +52,22 @@ router.post('/signup', function (req, res, next) {
 
 router.post('/login', function (req, res, next) {
 
-
+console.log('login');
     User.findOne({email: req.body.email}, function (err, user) {
 
 
         if (user === null) {
             //res.send("User doesn't Exists");
-            res.send(JSON.stringify({message: "User doesn't Exists", code: 'no'}));
+            res.send(JSON.stringify({message: "User doesn't Exists", code: false}));
         } else if (user.email === req.body.email) {
 
             if (user.password === req.body.password) {
-                res.send(JSON.stringify({message: "login successfully", code: 'login', user: user}));
+                res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
             } else {
-                res.send(JSON.stringify({message: "Invalid Password", code: 'no'}));
+                res.send(JSON.stringify({message: "Invalid Password", code: false}));
             }
         } else if (user.email === req.body.email && user.password === req.body.password) {
-            res.send(JSON.stringify({message: "login successfully", code: 'login', user: user}));
+            res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
         }
 
     });
