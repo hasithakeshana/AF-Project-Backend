@@ -18,10 +18,23 @@ app.use(cors());
 
 //connect to mongodb
 
-mongoose.connect('mongodb://localhost/FashionStore', { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
-mongoose.Promise = global.Promise;
+const uri =
+	"mongodb+srv://rashmika:Rashmika@fashionstore-k14re.mongodb.net/fashionstore?retryWrites=true&w=majority";
+// path of the mongodb cloud
 
-mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
+
+mongoose.connect(
+	uri,
+	{ useUnifiedTopology: true, useFindAndModify: false },
+	() => {
+		console.log("DB connected");
+	}
+); // Connect to Mongoose and set connection variable
+
+//mongoose.connect('mongodb://localhost/FashionStore', { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
+//mongoose.Promise = global.Promise;
+
+//mongoose.connect("mongodb://127.0.0.1:27017/FashionStore", { useUnifiedTopology: true   , useFindAndModify: false, useNewUrlParser: true});
 
 // mongoose.connect('',() => {
 // console.log('connects to the db');

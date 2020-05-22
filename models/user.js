@@ -9,6 +9,7 @@ const UserSchema = new Schema({
     lastName : {  type : String,  required: true   },
     email : {  type : String,  required: true, unique: true  },
     password : {  type : String ,  required: true  },
+    role: { type: String, required: true, default: "User"},
     isVerified: {type: Boolean, default: false}//will be true after email verification
 
 });
