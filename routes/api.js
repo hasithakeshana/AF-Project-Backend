@@ -676,5 +676,26 @@ router.patch('/updateProductDiscount/:_id',async (req,res)=>{
 
 })
 
+router.patch('/deductStock/:id', async (req,res)=>{
+
+    try {
+        if(req.body.size !== undefined ){
+
+            const id = req.params.id;
+            let color = req.body.color.toLowerCase();
+            let size = req.body.size.toLowerCase();
+            let quantity = req.body.quantity;
+            let size2 = size[0] + "Quantity";
+            const query = "quantity."+size2+"."+color
+            let stock = quantity[size2][color] - 1;
+            const data = await Products.findOneAndUpdate({_id:"5ec01dcb7df10525e4a63c6f"},{"$set":{[query]:stock}})
+
+        }
+
+
+    }catch (e) {
+        console.log(e)
+    }
+})
 
 module.exports = router;
