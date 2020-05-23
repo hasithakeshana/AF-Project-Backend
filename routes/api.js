@@ -641,8 +641,7 @@ router.post('/addCategories',async (req,res)=>{
 })
 
 router.get('/getCategoriesToNav',async (req,res)=>{
-
-    try {
+        try {
         const category = await Categories.find();
         await res.json(category);
 
@@ -652,6 +651,30 @@ router.get('/getCategoriesToNav',async (req,res)=>{
 
 })
 
+router.get('/getProductToAddDiscount/:productId',async (req,res)=>{
+    try{
+       const product=  await Products.findOne({$or:[{"itemID": req.params.productId}]});
+        await res.json(product)
+    }catch (e) {
+        console.log(e)
+    }
+
+})
+
+router.patch('/updateProductDiscount/:_id',async (req,res)=>{
+    try{
+     const updatedProduct =  await Products.updateOne(
+         {_id:req.params._id},
+         {$set:{discount:req.body.discount}});
+
+        await res.json(updatedProduct);
+
+    }catch (e) {
+        console.log(e);
+
+    }
+
+})
 
 
 module.exports = router;
