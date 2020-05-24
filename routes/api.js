@@ -401,7 +401,7 @@ router.get("/getRatingsWithComments/:id", async (req, res, next) => {  // get ra
 });
 
 
-router.get('/items1/:id', async (req, res, next) => {
+router.get('/items/:id', async (req, res, next) => {
     try {
 
         const item = await Products.findOne({_id: req.params.id});
