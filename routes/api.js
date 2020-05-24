@@ -14,7 +14,7 @@ const crypto = require('crypto');
 const nodemailer = require("nodemailer");
 //const passport = require("passport");
 const Token = require('../models/Token');
-
+require('dotenv').config();
 app.use(bodyParser.json());
 
 const storage = multer.diskStorage({
@@ -44,45 +44,9 @@ router.get('/users', function (req, res) {
 });
 
 
-// router.post('/signup', function (req, res, next) {
-
-//     User.create(req.body).then(function (user) {
-
-    
-//     res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
-
-
-//     }).catch(next);
-
-// });
-
-
-// router.post('/login', function (req, res, next) {
-
-// console.log('login');
-//     User.findOne({email: req.body.email}, function (err, user) {
-
-
-//         if (user === null) {
-//             //res.send("User doesn't Exists");
-//             res.send(JSON.stringify({message: "User doesn't Exists", code: false}));
-//         } else if (user.email === req.body.email) {
-
-//             if (user.password === req.body.password) {
-//                 res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-//             } else {
-//                 res.send(JSON.stringify({message: "Invalid Password", code: false}));
-//             }
-//         } else if (user.email === req.body.email && user.password === req.body.password) {
-//             res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-//         }
-
-//     });
-
-// });
-
-
 router.post('/signup',function(req,res,next){
+
+  console.log(req.body);
 
     User.findOne({ email: req.body.email}). then(user =>{
       if(user) {
@@ -96,14 +60,15 @@ router.post('/signup',function(req,res,next){
             req.body.password = hash;
             
             User.create(req.body).then(function(user){
+              
   
-            res.header("Access-Control-Allow-Origin", "http://localhost:4000"); // update to match the domain you will make the request from
+            res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
             res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
             res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
               
   
             res.setHeader('Content-Type', 'application/json');
-            //res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
+            res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
             
             //new verification token is created for the new user
                   var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
@@ -115,8 +80,8 @@ router.post('/signup',function(req,res,next){
                     }
   
                     //send the email
-                    var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: 'hasithakeshana9900@gmail.com', pass: '9812sliit' }, tls: { rejectUnauthorized: false } });                                          
-                    var mailOptions = { from: 'hasithakeshana9900@gmail.com', to: user.email, subject: 'Account Verification Token', text: 'Hello, \n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  user.email + '\n' }; 
+                    var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: process.env.EMAIL, pass: process.env.PASSWORD }, tls: { rejectUnauthorized: false } });                                          
+                    var mailOptions = { from: process.env.EMAIL, to: user.email, subject: 'Account Verification Token', text: 'Hello, \n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  user.email + '\n' }; 
                     transporter.sendMail(mailOptions, function (err) {
                       if (err) { return res.status(500).send({ msg: err.message }); }
                       res.status(200).send('A verification email has been sent to ' + user.email + '.');
