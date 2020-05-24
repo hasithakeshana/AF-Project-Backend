@@ -8,15 +8,8 @@ const mongoose = require("mongoose");
 const multer = require('multer');
 const bodyParser = require('body-parser');
 const Categories = require('../models/Categories');
-const bcrypt = require("bcryptjs");
-const jwt = require("jsonwebtoken");
-const crypto = require('crypto');
-const nodemailer = require("nodemailer");
-//const passport = require("passport");
-const Token = require('../models/Token');
 
 app.use(bodyParser.json());
-
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
         cb(null, './uploads/');
@@ -44,184 +37,76 @@ router.get('/users', function (req, res) {
 });
 
 
-// router.post('/signup', function (req, res, next) {
+router.post('/signup', function (req, res, next) {
 
-//     User.create(req.body).then(function (user) {
+    User.create(req.body).then(function (user) {
 
-    
-//     res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.header("Access-Control-Allow-Methods", "POST, GET, OPTIONS");
 
+//     res.setHeader('Content-Type', 'application/json');
+// res.send({ data: 'user created in db' });
 
-//     }).catch(next);
+        res.setHeader('Content-Type', 'application/json');
+        res.send(JSON.stringify({success: "registerd successfully", code: 'reg', user: user}));
+//res.json({ user: 'foo' });
 
-// });
+    }).catch(next);
 
-
-// router.post('/login', function (req, res, next) {
-
-// console.log('login');
-//     User.findOne({email: req.body.email}, function (err, user) {
-
-
-//         if (user === null) {
-//             //res.send("User doesn't Exists");
-//             res.send(JSON.stringify({message: "User doesn't Exists", code: false}));
-//         } else if (user.email === req.body.email) {
-
-//             if (user.password === req.body.password) {
-//                 res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-//             } else {
-//                 res.send(JSON.stringify({message: "Invalid Password", code: false}));
-//             }
-//         } else if (user.email === req.body.email && user.password === req.body.password) {
-//             res.send(JSON.stringify({message: "login successfully", code: true, user: user}));
-//         }
-
-//     });
-
-// });
+});
 
 
-router.post('/signup',function(req,res,next){
-  
-    console.log(req.body);
-  
-    User.findOne({ email: req.body.email}). then(user =>{
-      if(user) {
-        res.status(400).send({email:"User with email already exists"} );
-      } else {
-        
-        //encrypt password before saving in database
-        bcrypt.genSalt(10, (err, salt) => {
-          bcrypt.hash(req.body.password, salt, (err, hash) => {
-            if (err) throw err;
-            req.body.password = hash;
-            
-            User.create(req.body).then(function(user){
-  
-            res.header("Access-Control-Allow-Origin", "http://localhost:4000"); // update to match the domain you will make the request from
-            res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
-            res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
-              
-  
-            res.setHeader('Content-Type', 'application/json');
-            //res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
-            
-            //new verification token is created for the new user
-                  var token = new Token({ _userId: user._id, token: crypto.randomBytes(16).toString('hex') });
-                  
-                  //save the verification token
-                  token.save(function (err) {
-                    if (err) {
-                      return res.status(500).send({ msg: err.message }); 
-                    }
-  
-                    //send the email
-                    var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: 'hasithakeshana9900@gmail.com', pass: '9812sliit' }, tls: { rejectUnauthorized: false } });                                          
-                    var mailOptions = { from: 'hasithakeshana9900@gmail.com', to: user.email, subject: 'Account Verification Token', text: 'Hello, \n\n' + 'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  user.email + '\n' }; 
-                    transporter.sendMail(mailOptions, function (err) {
-                      if (err) { return res.status(500).send({ msg: err.message }); }
-                      res.status(200).send('A verification email has been sent to ' + user.email + '.');
-                    });
-                  });
-          })
-        })
-  
-              
-      }).catch(next);
-    }
-  });
-  
-  });
-  
-  
-  
-router.post('/login',function(req,res,next){
-  
-      console.log(req.body);
-    
-      User.findOne({ email: req.body.email}, function(err, user) {
-  
-          console.log('user',user);
-     
-          if(user === null)
-          {
-             //res.send("User doesn't Exists");
-             //res.status(401).send(JSON.stringify({message:"User does not exist" , isValidLogin: true, } ));
-             res.send(JSON.stringify({message: "User does not exist",isValidLogin: false}));
-          }
-  
-          else if (user.email === req.body.email ){
-  
-            bcrypt.compare(req.body.password, user.password).then(isMatch => {
-              if(isMatch) {
-                //User matched
-                //res.status(401).send(JSON.stringify({message:"login successfully" , code : 'login', user : user} ));
-                // Create JWT Payload
-                const payload = {
-                  id: user._id,
-                  name: user.email,
-                  role: user.role,
-                };
-  
-                console.log('payload',payload);
-  
-                // Sign token
-                jwt.sign(
-                  payload,
-                  "secret",
-                  {
-                    expiresIn: 86400 // 1 day
-                  },
-                  (err, token) => {
-                    // res.json({
-                    //   isValidLogin: true,
-                    //   token: "Bearer " + token,
-                    //   token1 : token
-                    // });
-                    res.send(JSON.stringify({message: "User find",isValidLogin: true,token : token}));
-                  }
-                );
-  
-  
-              } 
-              
-              
-              else{
-               // res.status(400).send(JSON.stringify({message:"Invalid Password" , isValidLogin: false} ));
-                res.send(JSON.stringify({message: "Invalid Password",  isValidLogin: false}));
-              }
-            })
-              
-          }
-  
-      });
-    
+router.post('/login', function (req, res, next) {
+
+
+    User.findOne({email: req.body.email}, function (err, user) {
+
+
+        if (user === null) {
+            //res.send("User doesn't Exists");
+            res.send(JSON.stringify({message: "User doesn't Exists", code: 'no'}));
+        } else if (user.email === req.body.email) {
+
+            if (user.password === req.body.password) {
+                res.send(JSON.stringify({message: "login successfully", code: 'login', user: user}));
+            } else {
+                res.send(JSON.stringify({message: "Invalid Password", code: 'no'}));
+            }
+        } else if (user.email === req.body.email && user.password === req.body.password) {
+            res.send(JSON.stringify({message: "login successfully", code: 'login', user: user}));
+        }
+
     });
-  
-  
-  
-router.get('/confirmation/:token/:email', function (req, res, next){
-    
-    Token.findOne({ token: req.params.token }, function (err, token) {
-      if (!token) return res.status(400).send({ type: 'not-verified', msg: 'We were unable to find a valid token. Your token my have expired.' });
-  
-      // If we found a token, find a matching user
-      User.findOne({ _id: token._userId, email: req.params.email }, function (err, user) {
-          if (!user) return res.status(400).send({ msg: 'We were unable to find a user for this token.' });
-          if (user.isVerified) return res.status(400).send({ type: 'already-verified', msg: 'This user has already been verified.' });
-  
-          // Verify and save the user
-          user.isVerified = true;
-          user.save(function (err) {
-              if (err) { return res.status(500).send({ msg: err.message }); }
-              res.status(200).send("The account has been verified. Please log in.");
-          });
-      });
-  });
-  });
+
+});
 
 
+router.put('/users/:id', function (req, res) {
+
+    User.findByIdAndUpdate({_id: req.params.id}, req.body).then(function () {
+
+        User.findOne({_id: req.params.id}).then(function (user) {
+
+            res.send(user);
+        });
+    });
+
+
+});
+
+
+router.delete('/users/:id', function (req, res, next) {
+
+
+    User.findByIdAndDelete({_id: req.params.id}).then(function (user) {
+
+        res.send(user);
+
+    });
+
+    //res.send({type : 'DELETE'});
+});
 
 
 router.post("/items", function (req, res) {   // add an item
@@ -305,42 +190,42 @@ router.post("/addRatingWithComment/:id", async (req, res) => {   // add a rating
 
 });
 
-// router.post("/checkUserIsRated/:id", async (req, res) => {   // add a rating with comment to given product
+router.post("/checkUserIsRated/:id", async (req, res) => {   // add a rating with comment to given product
 
 
-//     try {
-//         const user = req.body.username;
-//         const item = await Products.findOne({_id: req.params.id});
-//         //5ebcf2228739513778b72153
-//         let isRated = false;
-//         let userIS = null;
+    try {
+        const user = req.body.username;
+        const item = await Products.findOne({_id: req.params.id});
+        //5ebcf2228739513778b72153
+        let isRated = false;
+        let userIS = null;
 
-//         for (let rating of item.ratings) {
-//             console.log(rating.userName);
-//             if (rating.userName == user) {
-//                 console.log('found user');
-//                 console.log('rating', rating);
-//                 isRated = true;
-//                 userIS = rating;
-//             }
+        for (let rating of item.ratings) {
+            console.log(rating.userName);
+            if (rating.userName == user) {
+                console.log('found user');
+                console.log('rating', rating);
+                isRated = true;
+                userIS = rating;
+            }
 
-//         }
+        }
 
-//         if (isRated) {
-//             res.send(JSON.stringify({message: "user rated", rated: true, rating: userIS}));
-//         } else {
-//             res.send(JSON.stringify({message: "user not rated", rated: false}));
-//         }
-
-
-//         //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
+        if (isRated) {
+            res.send(JSON.stringify({message: "user rated", rated: true, rating: userIS}));
+        } else {
+            res.send(JSON.stringify({message: "user not rated", rated: false}));
+        }
 
 
-//     } catch (e) {
-//         console.log(e);
-//     }
+        //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
 
-// });
+
+    } catch (e) {
+        console.log(e);
+    }
+
+});
 
 
 router.get("/getRatingsWithComments/:id", async (req, res, next) => {  // get ratings for given product id
@@ -409,29 +294,29 @@ router.get('/items/:id', async (req, res, next) => {
 
         res.send(JSON.stringify({message: "item details", item: item}));
       } catch (e) {
-        
+
         next(e)
     }
 });
 
     router.post("/checkUserIsRated/:id", async (req, res) =>{   // add a rating with comment to given product
-    
+
 
       try{
-    
+
         console.log('apii  body',req.body);
         console.log('apiiiiii id',req.params.id);
-    
+
         const user = req.body.username;
-    
+
         const item = await Products.findOne({_id : req.params.id});
-    
+
         console.log('items ratings',item.ratings);
-    
+
         //5ebcf2228739513778b72153
         let isRated = false;
         let userIS = null;
-    
+
         for(let rating of item.ratings)
         {
           console.log(rating.userName);
@@ -442,9 +327,9 @@ router.get('/items/:id', async (req, res, next) => {
             isRated = true;
             userIS = rating;
           }
-          
+
         }
-    
+
         if(isRated)
         {
           res.send(JSON.stringify({message:"user rated" ,rated:true ,rating:userIS  } ));
@@ -453,26 +338,26 @@ router.get('/items/:id', async (req, res, next) => {
         {
           res.send(JSON.stringify({message:"user not rated",rated:false } ));
         }
-    
-        
-        
+
+
+
         //res.send(JSON.stringify({message:"rating added successfully" , item : item } ));
-    
-    
+
+
       }catch(e)
       {
         console.log(e);
       }
-    
+
     });
-    
-    
-    
+
+
+
 router.put('/updateRating/:id', async (req, res, next) => {
           try {
-    
+
             console.log("id",req.params.id);
-    
+
         const response =   await  Products.updateOne(
               {
                 "_id" : req.body.productId,
@@ -483,39 +368,39 @@ router.put('/updateRating/:id', async (req, res, next) => {
                 {
                     "ratings.$.rate": req.body.rate,
                     "ratings.$.comment": req.body.comment,
-    
+
                 }
               }
             );
-          
+
             res.send(JSON.stringify({message:"rate updated" , item : response } ));
-    
-            
+
+
           } catch (e) {
-            
-            next(e) 
+
+            next(e)
           }
         });
-    
+
 router.delete('/deleteRating/:id', async (req, res, next) => {
           try {
-    
+
             console.log("id",req.params.id);
-    
+
         const response =   await  Products.updateOne(
           { _id: req.body.productId },
           { $pull: { 'ratings': { _id: req.params.id } } }
             );
-          
+
             res.send(JSON.stringify({message:"rate deleted" , item : response } ));
-    
-            
+
+
           } catch (e) {
-            
-            next(e) 
+
+            next(e)
           }
         });
-    
+
 
 
 
@@ -523,39 +408,28 @@ router.post("/addItemToWishList/:id", async (req, res) => {   // add a items for
 
     try {
 
-        const item = await Products.findOne({_id: req.params.id}); // find the item
+        const item = await Items.findOne({_id: req.params.id}); // find the item
 
-        console.log('item wishlist',item._id);
-
-        const itemAdd = {itemID : item._id,itemName: item.name,mainCategory :item.mainCategory, price: item.price,
-            image : item.images[0].productImage}
-
-        console.log('item',itemAdd);
-
+        const itemAdd = {itemName: item.name, price: item.price, quantity: item.quantity}
         const user = await User.findOne({_id: req.body.userId});
-
-        console.log('user wishlist',user);
-
         const list = await user.wishlist;
-
-        console.log('user list',list);
 
         var exists = false;
 
         for (let x of list) {
-            console.log('x',x.itemID)
-            if (x.itemID == item._id) {
+            if (x.itemName === item.name) {
                 exists = true;
             }
+
         }
 
         if (exists) {
-            res.send(JSON.stringify({message: "alreadyy exists",exists:true}));
+            res.send(JSON.stringify({message: "alreadyy existssssssssssssssss"}));
         } else {
 
             const response = await User.findOneAndUpdate({_id: req.body.userId}, {$push: {wishlist: itemAdd}}, {new: true});
             // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
-            res.send(JSON.stringify({message: "add item successfully to wishlist", wishlist: response.wishlist,exists:false}));
+            res.send(JSON.stringify({message: "add item successfully to wishlist", wishlist: response.wishlist}));
 
         }
 
@@ -567,7 +441,6 @@ router.post("/addItemToWishList/:id", async (req, res) => {   // add a items for
 });
 
 
-
 router.post("/addItemWishListFromCart/:id", async (req, res) => {   // add a items for wishlist
 
     try {
@@ -576,7 +449,7 @@ router.post("/addItemWishListFromCart/:id", async (req, res) => {   // add a ite
         const itemAdd = req.body;
 
         const response = await User.findOneAndUpdate({_id: req.params.id}, {$push: {cart: itemAdd}}, {new: true});
-       
+        // //   // const response = await User.findOneAndUpdate({ userName: 'hasitha' }, {$push: {wishlist: itemAdd}}, { new: true });
 
         res.send(JSON.stringify({message: "add item successfully to cart", wishlist: response.cart}));
 
@@ -590,16 +463,7 @@ router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
     try {
 
         const response = await User.findOne({_id: req.params.id});
-
-        let total=0;
-
-        for (let item of response.wishlist) {
-            total = total + item.price;
-        }
-
-        console.log('total',total);
-
-        res.send(JSON.stringify({message: "wishlist details", wishlist: response.wishlist,total:total}));
+        res.send(JSON.stringify({message: "wishlist details", wishlist: response.wishlist}));
 
     } catch (e) {
 
@@ -614,7 +478,6 @@ router.post('/deleteWishListProduct', async (req, res, next) => { // delete item
 
         const responses = await User.updateOne({_id: req.body.userId}, {'$pull': {'wishlist': {'_id': req.body.wishListOredrId}}}, {multi: true});
 
-        console.log('responses delete',responses,response);
         res.send(JSON.stringify({message: "deleted successfully", wishlist: responses}));
 
     } catch (e) {
@@ -689,13 +552,25 @@ router.patch('/deductStock/:id', async (req,res)=>{
             const query = "quantity."+size2+"."+color
             let stock = quantity[size2][color] - 1;
             const data = await Products.findOneAndUpdate({_id:"5ec01dcb7df10525e4a63c6f"},{"$set":{[query]:stock}})
+            console.log(data)
 
         }
-
 
     }catch (e) {
         console.log(e)
     }
 })
+
+
+router.get('/getCart/:id', async (req, res, next) => {
+    try {
+        const response = await User.findOne({_id: req.params.id});
+       await res.json(response)
+
+    } catch (e) {
+
+        next(e)
+    }
+});
 
 module.exports = router;
