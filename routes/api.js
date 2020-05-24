@@ -83,9 +83,7 @@ router.get('/users', function (req, res) {
 
 
 router.post('/signup',function(req,res,next){
-  
-    console.log(req.body);
-  
+
     User.findOne({ email: req.body.email}). then(user =>{
       if(user) {
         res.status(400).send({email:"User with email already exists"} );
@@ -137,12 +135,9 @@ router.post('/signup',function(req,res,next){
   
   
 router.post('/login',function(req,res,next){
-  
-      console.log(req.body);
     
       User.findOne({ email: req.body.email}, function(err, user) {
-  
-          console.log('user',user);
+
      
           if(user === null)
           {
@@ -164,7 +159,7 @@ router.post('/login',function(req,res,next){
                   role: user.role,
                 };
   
-                console.log('payload',payload);
+
   
                 // Sign token
                 jwt.sign(
@@ -419,14 +414,12 @@ router.get('/items/:id', async (req, res, next) => {
 
       try{
     
-        console.log('apii  body',req.body);
-        console.log('apiiiiii id',req.params.id);
-    
+
         const user = req.body.username;
     
         const item = await Products.findOne({_id : req.params.id});
     
-        console.log('items ratings',item.ratings);
+
     
         //5ebcf2228739513778b72153
         let isRated = false;
@@ -434,11 +427,11 @@ router.get('/items/:id', async (req, res, next) => {
     
         for(let rating of item.ratings)
         {
-          console.log(rating.userName);
+         // console.log(rating.userName);
           if(rating.userName == user)
           {
-            console.log('found user');
-            console.log('rating',rating);
+           // console.log('found user');
+            //console.log('rating',rating);
             isRated = true;
             userIS = rating;
           }
@@ -471,7 +464,8 @@ router.get('/items/:id', async (req, res, next) => {
 router.put('/updateRating/:id', async (req, res, next) => {
           try {
     
-            console.log("id",req.params.id);
+           //
+              // console.log("id",req.params.id);
     
         const response =   await  Products.updateOne(
               {
@@ -500,8 +494,6 @@ router.put('/updateRating/:id', async (req, res, next) => {
 router.delete('/deleteRating/:id', async (req, res, next) => {
           try {
     
-            console.log("id",req.params.id);
-    
         const response =   await  Products.updateOne(
           { _id: req.body.productId },
           { $pull: { 'ratings': { _id: req.params.id } } }
@@ -525,25 +517,23 @@ router.post("/addItemToWishList/:id", async (req, res) => {   // add a items for
 
         const item = await Products.findOne({_id: req.params.id}); // find the item
 
-        console.log('item wishlist',item._id);
 
         const itemAdd = {itemID : item._id,itemName: item.name,mainCategory :item.mainCategory, price: item.price,
             image : item.images[0].productImage}
 
-        console.log('item',itemAdd);
 
         const user = await User.findOne({_id: req.body.userId});
 
-        console.log('user wishlist',user);
+      //  console.log('user wishlist',user);
 
         const list = await user.wishlist;
 
-        console.log('user list',list);
+       // console.log('user list',list);
 
         var exists = false;
 
         for (let x of list) {
-            console.log('x',x.itemID)
+            //console.log('x',x.itemID)
             if (x.itemID == item._id) {
                 exists = true;
             }
@@ -597,8 +587,6 @@ router.get('/getWishList/:id', async (req, res, next) => {  // get user wishlist
             total = total + item.price;
         }
 
-        console.log('total',total);
-
         res.send(JSON.stringify({message: "wishlist details", wishlist: response.wishlist,total:total}));
 
     } catch (e) {
@@ -614,7 +602,6 @@ router.post('/deleteWishListProduct', async (req, res, next) => { // delete item
 
         const responses = await User.updateOne({_id: req.body.userId}, {'$pull': {'wishlist': {'_id': req.body.wishListOredrId}}}, {multi: true});
 
-        console.log('responses delete',responses,response);
         res.send(JSON.stringify({message: "deleted successfully", wishlist: responses}));
 
     } catch (e) {
@@ -632,7 +619,7 @@ router.post('/addCategories',async (req,res)=>{
     });
     try {
             const savedCategory = await category.save();
-            res.json(savedCategory);
+           res.json(savedCategory);
     }catch (e) {
         console.log(e)
     }
@@ -650,8 +637,11 @@ router.get('/getCategoriesToNav',async (req,res)=>{
         console.log(e)
     }
 
+});
+router.get('/getCart/:id',async (req,res)=>{
+
+    const response = await User.findOne({_id: req.params.id});
+    return res.json(response);
+
 })
-
-
-
 module.exports = router;
