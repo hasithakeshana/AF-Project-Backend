@@ -698,9 +698,7 @@ router.patch('/deductStock/:id', async (req,res)=>{
     }
 })
 
-router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add an 
-
-  item
+router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add an item
   
     const reqFiles = [];
     const url = req.protocol + '://' + req.get('host') + '/'
