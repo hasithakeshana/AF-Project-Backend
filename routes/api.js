@@ -109,7 +109,7 @@ router.delete('/users/:id', function (req, res, next) {
 });
 
 
-router.post("/items", function (req, res) {   // add an item
+router.post("/itemsAdd", function (req, res) {   // add an item
 
     // console.log(req.file);
 
@@ -286,7 +286,7 @@ router.get("/getRatingsWithComments/:id", async (req, res, next) => {  // get ra
 });
 
 
-router.get('/items/:id', async (req, res, next) => {
+router.get('/items1/:id', async (req, res, next) => {
     try {
 
         const item = await Products.findOne({_id: req.params.id});
@@ -311,7 +311,6 @@ router.get('/items/:id', async (req, res, next) => {
 
         const item = await Products.findOne({_id : req.params.id});
 
-        console.log('items ratings',item.ratings);
 
         //5ebcf2228739513778b72153
         let isRated = false;
@@ -572,5 +571,92 @@ router.get('/getCart/:id', async (req, res, next) => {
         next(e)
     }
 });
+router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add an item
+  
+    const reqFiles = [];
+    const url = req.protocol + '://' + req.get('host') + '/'
+    for (var i = 0; i < req.files.length; i++) {
+      reqFiles.push(url + req.files[i].path)
+    }
+      //image upload
+      console.log("file",reqFiles);
+  
+      const product = {
+        name : req.body.title,
+        description: req.body.description,
+        mainCategory: req.body.category,
+        subCategory: req.body.subCategory,
+        price: req.body.price,
+        discount: req.body.discount,
+        quantity: req.body.quantity,
+        images: reqFiles,
+      }
+  
+      console.log(product);
+      Product.create(product)
+        .then(function(products) {
+         
+          res.json(products);
+        })
+        .catch(function(err) {
+          // If an error occurred, send it to the client
+          res.json(err);
+        });
+  });
+  
+  router.post('/signupManager',function(req,res,next){
+  
+    console.log(req.body);
+  
+    User.findOne({ email: req.body.email}). then(manager =>{
+      if(manager) {
+        res.status(400).send({email:"User with email already exists"} );
+      } else {
+  
+        const managerData = {
+          firstName : req.body.firstName,
+          lastName: req.body.lastName,
+          email: req.body.email,
+          password: req.body.password,
+          role: "Manager",
+        }         
+        
+        User.create(managerData).then(function(manager){
+  
+        res.header("Access-Control-Allow-Origin", "http://localhost:3000"); // update to match the domain you will make the request from
+        res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+        res.header("Access-Control-Allow-Methods" , "POST, GET, OPTIONS");
+          
+  
+        res.setHeader('Content-Type', 'application/json');
+        //res.status(200).send(JSON.stringify({success:"registerd successfully" , code : 'reg', user : user} ));
+        
+        //new verification token is created for the new user
+              var token = new Token({ _userId: manager._id, token: crypto.randomBytes(16).toString('hex') });
+              
+              //save the verification token
+              token.save(function (err) {
+                if (err) {
+                  return res.status(500).send({ msg: err.message }); 
+                }
+  
+                //send the email
+                var transporter = nodemailer.createTransport({ service: 'gmail', port: 25, secure: false , auth: { user: 'donotrep2ly921@gmail.com', pass: '0711920012' }, tls: { rejectUnauthorized: false } });                                          
+                var mailOptions = { from: 'donotrep2ly921@gmail.com', 
+                                    to: manager.email, 
+                                    subject: 'Manager Account Verification', 
+                                    text: 'Hello, \n\n' + 
+                                    'Please verify your account by clicking the link: \nhttp:\/\/' + req.headers.host + '\/api\/confirmation\/' + token.token + '\/' +  manager.email + '\n' }; 
+                transporter.sendMail(mailOptions, function (err) {
+                  if (err) { return res.status(500).send({ msg: err.message }); }
+                  res.status(200).send('A verification email has been sent to ' + user.email + '.');
+                });
+              });
+      }).catch(next);
+    }
+  });
+  
+  });
+  
 
 module.exports = router;
