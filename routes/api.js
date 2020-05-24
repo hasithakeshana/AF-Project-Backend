@@ -219,7 +219,7 @@ router.get('/confirmation/:token/:email', function (req, res, next){
 
 
 
-router.post("/items", function (req, res) {   // add an item
+router.post("/items1", function (req, res) {   // add an item
 
     // console.log(req.file);
 
@@ -377,7 +377,11 @@ router.get("/getRatingsWithComments/:id", async (req, res, next) => {  // get ra
         }
 
         const avgs = sum / item.ratings.length;
-        const avg = avgs.toFixed(2);
+        let avg = avgs.toFixed(2);
+        if(isNaN(avg)){
+          avg = 0;
+        }
+        console.log(avg);
 
 
         res.send(JSON.stringify({
@@ -644,4 +648,39 @@ router.get('/getCart/:id',async (req,res)=>{
     return res.json(response);
 
 })
+
+
+router.post("/items", upload.array('productImage', 4) , (req, res) => {   // add an item
+
+  const reqFiles = [];
+  const url = req.protocol + '://' + req.get('host') + '/'
+  for (var i = 0; i < req.files.length; i++) {
+    reqFiles.push(url + req.files[i].path)
+  }
+    //image upload
+    console.log("file",reqFiles);
+
+    const product = {
+      name : req.body.title,
+      description: req.body.description,
+      mainCategory: req.body.category,
+      subCategory: req.body.subCategory,
+      price: req.body.price,
+      discount: req.body.discount,
+      quantity: req.body.quantity,
+      images: reqFiles,
+    }
+
+    console.log(product);
+    Product.create(product)
+      .then(function(products) {
+       
+        res.json(products);
+      })
+      .catch(function(err) {
+        // If an error occurred, send it to the client
+        res.json(err);
+      });
+});
+
 module.exports = router;
